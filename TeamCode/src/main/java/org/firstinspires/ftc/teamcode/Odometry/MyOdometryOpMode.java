@@ -15,7 +15,7 @@ public class MyOdometryOpMode extends LinearOpMode {
     final double COUNTS_PER_INCH = 307.699557;
 
     String rfName = "RightForward", rbName = "RightBack", lfName = "LeftForward", lbName = "LeftBack";
-    String verticalLeftEncoderName = rfName, verticalRightEncoderName = lfName, horizontalEncoderName = lbName;
+    String verticalLeftEncoderName = rbName, verticalRightEncoderName = lfName, horizontalEncoderName = rfName;
 
     OdometryGlobalCoordinatePosition globalPositionUpdate;
 
