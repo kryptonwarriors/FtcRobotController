@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -22,18 +23,6 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import java.util.ArrayList;
 import java.util.List;
 
-
-/**
- * Created by maryjaneb  on 11/13/2016.
- * <p>
- * nerverest ticks
- * 60 1680
- * 40 1120
- * 20 560
- * <p>
- * monitor: 640 x 480
- * YES
- */
 @Autonomous(name = "opencvSkystoneDetector", group = "Sky autonomous")
 
 //@Disabled//comment out this line before using
@@ -50,12 +39,11 @@ public class opencvSkystoneDetector extends LinearOpMode {
     private static float rectWidth = 1.5f / 7f;
     private static float offsetX = 0f / 8f;
     //changing this moves the three rects and the three circles left or right, range : (-2, 2) not inclusive
-
-    private static float offsetY = 0f / 8f;
+    private static float offsetY = -.3f / 8f;
     //changing this moves the three rects and circles up or down, range: (-4, 4) not inclusive
 
-    private static float[] bottomPos = {4f / 8f + offsetX, 4f / 8f + offsetY};//0 = col, 1 = row
-    private static float[] topPos = {4f / 8f + offsetX, 3f / 8f + offsetY};
+    private static float[] bottomPos = {4f / 8f + offsetX, 3.9f / 8f + offsetY};//0 = col, 1 = row
+    private static float[] topPos = {4f / 8f + offsetX, 3.6f / 8f + offsetY};
     private ElapsedTime runtime = new ElapsedTime();
     //moves all rectangles right or left by amount. units are in ratio to monitor
 
@@ -66,19 +54,11 @@ public class opencvSkystoneDetector extends LinearOpMode {
     private static DcMotor LeftBack = null;
     private static DcMotor RightForward = null;
     private static DcMotor RightBack = null;
-    private static DcMotor LinearActuator = null;
-    private static DcMotor LeftCascade = null;
-    private static DcMotor RightCascade = null;
 
-    private static Servo LeftClamp = null;
-    private static Servo LeftFoundation = null;
-    private static Servo RightClamp = null;
-    private static Servo RightFoundation = null;
+    private static DcMotor Wobbler = null;
 
-    private static DistanceSensor LeftDistance = null;
-    private static DistanceSensor RightDistance = null;
-
-    OpenCvCamera phoneCam;
+    private static Servo WobbleClamper = null;
+    OpenCvCamera webcam;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -95,11 +75,12 @@ public class opencvSkystoneDetector extends LinearOpMode {
 */
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        phoneCam = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
-
-        phoneCam.openCameraDevice ();//open camera
-        phoneCam.setPipeline ( new StageSwitchingPipeline () );//different stages
-        phoneCam.startStreaming ( rows, cols, OpenCvCameraRotation.UPRIGHT );//display on RC
+        webcam = OpenCvCameraFactory.getInstance ().createWebcam (
+                hardwareMap.get ( WebcamName.class, "Webcam 1" ),
+                cameraMonitorViewId );
+        webcam.openCameraDevice ();//open camera
+        webcam.setPipeline ( new StageSwitchingPipeline () );//different stages
+        webcam.startStreaming ( rows, cols, OpenCvCameraRotation.UPRIGHT );//display on RC
         //width, height
         //width = height in this case, because camera is in portrait mode.
 
@@ -129,6 +110,8 @@ public class opencvSkystoneDetector extends LinearOpMode {
 
         }
     }
+
+
 
     //detection pipeline
     static class StageSwitchingPipeline extends OpenCvPipeline {

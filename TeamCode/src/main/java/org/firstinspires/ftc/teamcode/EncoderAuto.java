@@ -20,15 +20,20 @@ public class EncoderAuto extends LinearOpMode {
         LeftBack = hardwareMap.dcMotor.get("LeftBack");
         RightBack = hardwareMap.dcMotor.get("RightBack");
 
-        LeftForward.setDirection(DcMotor.Direction.REVERSE);
-        LeftBack.setDirection(DcMotor.Direction.REVERSE);
+
+
+
 
         telemetry.addData("Status", "Init Complete");
         telemetry.update();
         waitForStart();
 
         while (opModeIsActive()) {
-            //moveEncoders(LEFT, 0.15, 2000);
+            //moveEncoders(FORWARD, 0.15, 2000);
+            LeftForward.setPower(0.2);
+            LeftBack.setPower(0.2);
+            RightForward.setPower(0.2);
+            RightBack.setPower(0.2);
 
             telemetry.addData("Status", "Program Complete");
             telemetry.addData("Position", LeftForward.getCurrentPosition() + "," + LeftForward.getTargetPosition());
@@ -63,9 +68,9 @@ public class EncoderAuto extends LinearOpMode {
                 LeftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 RightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                LeftForward.setPower(Power);
+                LeftForward.setPower(-Power);
                 RightForward.setPower(Power);
-                LeftBack.setPower(Power);
+                LeftBack.setPower(-Power);
                 RightBack.setPower(Power);
             }
 
