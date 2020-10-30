@@ -53,12 +53,12 @@ public class RedPracticeAuto extends LinearOpMode {
     private static int valTop = -1;
     private static String ringConfig;
     private static float rectWidth = 1.5f / 7f;
-    private static float offsetX = -0.3f / 8f;
+    private static float offsetX = -0.1f / 8f;
     //changing this moves the three rects and the three circles left or right, range : (-2, 2) not inclusive
-    private static float offsetY = -.4f / 8f;
+    private static float offsetY = 0f / 8f;
     //changing this moves the three rects and circles up or down, range: (-4, 4) not inclusive
 
-    private static float[] bottomPos = {4f / 8f + offsetX, 4f / 8f + offsetY};//0 = col, 1 = row
+    private static float[] bottomPos = {4f / 8f + offsetX, 3.95f / 8f + offsetY};//0 = col, 1 = row
     private static float[] topPos = {4f / 8f + offsetX, 3.42f / 8f + offsetY};
 
     private final int rows = 640;
@@ -132,38 +132,37 @@ public class RedPracticeAuto extends LinearOpMode {
                WobbleClamper.setPosition(0);
                sleep(500);
                Wobbler.setPower(0);
-               //Go to Low Goal
-               moveEncoders(RIGHT, 0.5, 1200);
-               moveEncoders(LTURN, 0.6, 650);
-               moveEncoders(RIGHT, 0.5, 600);
 
-               //Drop Rings into Goal
-               Ringer.setPower(-1);
-               sleep(1000);
-               Ringer.setPower(0);
-               RingClamper.setPosition(0.6);
+               moveEncoders(FORWARD, 0.5, 300);
 
             } else if (ringConfig == "B") {
                 //Go To Wobble Drop Zone
                 moveEncoders(RIGHT, 0.5, 700);
-                moveEncoders(FORWARD, 0.7, 2200);
+                moveEncoders(FORWARD, 0.7, 2800);
                 moveEncoders(RTURN, 0.6, 650);
+
+                //Drop Wobble Goal
+                Wobbler.setPower(-1);
+                WobbleClamper.setPosition(0);
+                sleep(1200);
+                Wobbler.setPower(0);
+
+                moveEncoders(RIGHT, 0.5, 600);
+
+
+
+            } else if (ringConfig == "C") {
+                //Go to Wobble Drop Zone
+                moveEncoders(RIGHT, 0.5, 700);
+                moveEncoders(FORWARD, 0.7, 3100);
+                moveEncoders(RTURN, 0.6, 1550);
                 //Drop Wobble Goal
                 Wobbler.setPower(-1);
                 WobbleClamper.setPosition(0);
                 sleep(500);
                 Wobbler.setPower(0);
 
-            } else if (ringConfig == "C") {
-                //Go to Wobble Drop Zone
-                moveEncoders(RIGHT, 0.5, 700);
-                moveEncoders(FORWARD, 0.7, 2200);
-                moveEncoders(RTURN, 0.6, 1300);
-                //Drop Wobble Goal
-                Wobbler.setPower(-1);
-                WobbleClamper.setPosition(0);
-                sleep(500);
-                Wobbler.setPower(0);
+                moveEncoders(FORWARD, 0.6, 900);
 
             }
 
