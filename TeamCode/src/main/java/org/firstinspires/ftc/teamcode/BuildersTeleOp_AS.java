@@ -32,7 +32,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
     RightBack = hardwareMap.dcMotor.get("RightBack");
     LeftForward = hardwareMap.dcMotor.get("LeftForward");
     LeftBack = hardwareMap.dcMotor.get("LeftBack");
-    
+    /*
     Wobbler = hardwareMap.dcMotor.get("Wobbler");
 
     WobbleClamper = hardwareMap.servo.get("WobbleClamper");
@@ -40,7 +40,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
     Ringer = hardwareMap.dcMotor.get("Ringer");
     RingClamper = hardwareMap.servo.get("RingClamper");
     
-    
+    */
     RightForward.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     RightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     LeftForward.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -53,7 +53,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
     LeftForward.setPower(0);
     LeftBack.setPower(0);
     
-    WobbleClamper.setPosition(0);
+   // WobbleClamper.setPosition(0);
     telemetry.addData(">", "INIT DONE");
 // RESET TIME
     runtime.reset();
@@ -114,11 +114,11 @@ public class BuildersTeleOp_AS extends LinearOpMode {
         RightForward.setPower(-Multiplier * Scale(gamepad1.right_stick_y));
         LeftForward.setPower(Multiplier * Scale(gamepad1.left_stick_y));
         LeftBack.setPower(Multiplier * Scale(gamepad1.left_stick_y));
-        Ringer.setPower(gamepad2.left_stick_y);
-        Wobbler.setPower(gamepad2.right_stick_y);
+        /*Ringer.setPower(gamepad2.left_stick_y);
+        Wobbler.setPower(gamepad2.right_stick_y);*/
       }
       
-    
+    /*
       //Wobble Goal Attachment
       if (gamepad2.y) {
         WobbleClamper.setPosition(0);
@@ -130,8 +130,8 @@ public class BuildersTeleOp_AS extends LinearOpMode {
           RingClamper.setPosition(0.6);
       }
       
-
-      
+*/
+      /*
       if (gamepad2.dpad_left) {
         Wobbler.setPower(1);
         
@@ -140,7 +140,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
       } else {
         Wobbler.setPower(0);
       }
-
+*/
 
       
       

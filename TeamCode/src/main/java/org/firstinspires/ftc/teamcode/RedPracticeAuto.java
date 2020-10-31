@@ -58,8 +58,8 @@ public class RedPracticeAuto extends LinearOpMode {
     private static float offsetY = 0f / 8f;
     //changing this moves the three rects and circles up or down, range: (-4, 4) not inclusive
 
-    private static float[] bottomPos = {4f / 8f + offsetX, 3.95f / 8f + offsetY};//0 = col, 1 = row
-    private static float[] topPos = {4f / 8f + offsetX, 3.42f / 8f + offsetY};
+    private static float[] bottomPos = {4f / 8f + offsetX, 3.86f / 8f + offsetY};//0 = col, 1 = row
+    private static float[] topPos = {4f / 8f + offsetX, 3.48f / 8f + offsetY};
 
     private final int rows = 640;
     private final int cols = 480;
@@ -69,6 +69,7 @@ public class RedPracticeAuto extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+        /*
         LeftForward = hardwareMap.dcMotor.get("LeftForward");
         RightForward = hardwareMap.dcMotor.get("RightForward");
         LeftBack = hardwareMap.dcMotor.get("LeftBack");
@@ -83,7 +84,7 @@ public class RedPracticeAuto extends LinearOpMode {
         LeftForward.setDirection(DcMotor.Direction.REVERSE);
         LeftBack.setDirection(DcMotor.Direction.REVERSE);
 
-
+*/
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(
@@ -94,10 +95,10 @@ public class RedPracticeAuto extends LinearOpMode {
         webcam.startStreaming(rows, cols, OpenCvCameraRotation.UPRIGHT);//display on RC
         //width, height
         //width = height in this case, because camera is in portrait mode.
-
+/*
         WobbleClamper.setPosition(0.25);
         RingClamper.setPosition(0.1);
-
+*/
         runtime.reset();
 
         while (!(isStopRequested() || isStarted())) {
