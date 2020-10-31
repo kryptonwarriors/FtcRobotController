@@ -112,7 +112,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
        }else {
         RightBack.setPower(-Multiplier * Scale(gamepad1.right_stick_y));
         RightForward.setPower(-Multiplier * Scale(gamepad1.right_stick_y));
-        LeftForward.setPower(Multiplier * Scale(gamepad1.left_stick_y));
+        LeftForward.setPower(Scale(gamepad1.left_stick_y));
         LeftBack.setPower(Multiplier * Scale(gamepad1.left_stick_y));
         /*Ringer.setPower(gamepad2.left_stick_y);
         Wobbler.setPower(gamepad2.right_stick_y);*/
