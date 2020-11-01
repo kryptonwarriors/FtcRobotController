@@ -14,7 +14,7 @@ import com.qualcomm.robotcore.util.Range;
 @TeleOp(name = "BuildersTeleOp_AS", group = "")
 public class BuildersTeleOp_AS extends LinearOpMode {
 
-  private DcMotor RightForward, RightBack, LeftForward, LeftBack, Wobbler, Ringer;
+  private DcMotor RightForward, RightBack, LeftForward, LeftBack, Intake, Shooter, Conveyor;
   private Servo WobbleClamper, RingClamper;
   private ElapsedTime runtime = new ElapsedTime();
   private double Multiplier = 0.7;
@@ -32,6 +32,10 @@ public class BuildersTeleOp_AS extends LinearOpMode {
     RightBack = hardwareMap.dcMotor.get("RightBack");
     LeftForward = hardwareMap.dcMotor.get("LeftForward");
     LeftBack = hardwareMap.dcMotor.get("LeftBack");
+
+    Intake = hardwareMap.dcMotor.get("Intake");
+    Conveyor = hardwareMap.dcMotor.get("Conveyor");
+    Shooter = hardwareMap.dcMotor.get("Shooter");
     /*
     Wobbler = hardwareMap.dcMotor.get("Wobbler");
 
@@ -117,20 +121,21 @@ public class BuildersTeleOp_AS extends LinearOpMode {
         /*Ringer.setPower(gamepad2.left_stick_y);
         Wobbler.setPower(gamepad2.right_stick_y);*/
       }
-      
-    /*
+
+
+
       //Wobble Goal Attachment
-      if (gamepad2.y) {
-        WobbleClamper.setPosition(0);
-      } else if (gamepad2.b){
-        WobbleClamper.setPosition(0.3);
-      } else if (gamepad2.x) {
-          RingClamper.setPosition(0.1);
-      } else if (gamepad2.a) {
-          RingClamper.setPosition(0.6);
+      if (gamepad2.left_stick_y > 0.01 || gamepad2.left_stick_y < -0.01){
+          Intake.setPower(-Multiplier * Scale(gamepad2.left_stick_y));
+          Conveyor.setPower(Multiplier * Scale(gamepad2.left_stick_y));
       }
-      
-*/
+      if (gamepad2.right_stick_y > 0.01 || gamepad2.right_stick_y < -0.01) {
+          Shooter.setPower(-gamepad2.right_stick_y);
+      }
+
+      telemetry.addData("Conveyor", Conveyor.getPower());
+      telemetry.addData("Shooter", Shooter.getPower());
+
       /*
       if (gamepad2.dpad_left) {
         Wobbler.setPower(1);
