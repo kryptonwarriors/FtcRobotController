@@ -50,6 +50,8 @@ public class BuildersTeleOp_AS extends LinearOpMode {
     LeftForward.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     LeftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+    Intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    Shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     
     
     RightForward.setPower(0);
@@ -125,16 +127,23 @@ public class BuildersTeleOp_AS extends LinearOpMode {
 
 
       //Wobble Goal Attachment
-      if (gamepad2.left_stick_y > 0.01 || gamepad2.left_stick_y < -0.01){
+      if (gamepad2.left_stick_y > 0.01 || gamepad2.left_stick_y < -0.01) {
           Intake.setPower(-Multiplier * Scale(gamepad2.left_stick_y));
           Conveyor.setPower(Multiplier * Scale(gamepad2.left_stick_y));
-      }
-      if (gamepad2.right_stick_y > 0.01 || gamepad2.right_stick_y < -0.01) {
-          Shooter.setPower(-gamepad2.right_stick_y);
+      } else {
+          Intake.setPower(0);
+          Conveyor.setPower(0);
       }
 
-      telemetry.addData("Conveyor", Conveyor.getPower());
+      if (gamepad2.a) {
+          Shooter.setPower(-1);
+      } else{
+          Shooter.setPower(0);
+      }
+
+      telemetry.addData("Conveyor + Intake", Conveyor.getPower());
       telemetry.addData("Shooter", Shooter.getPower());
+
 
       /*
       if (gamepad2.dpad_left) {
