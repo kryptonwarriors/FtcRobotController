@@ -24,7 +24,7 @@ public class Util {
     private int FORWARD = 0;
 
 
-    Util(ElapsedTime runtime, HardwareMap hardwareMap) {
+    public Util(ElapsedTime runtime, HardwareMap hardwareMap) {
 
         /* SERVO */
 
@@ -43,7 +43,7 @@ public class Util {
         RightBack.setZeroPowerBehavior ( DcMotor.ZeroPowerBehavior.BRAKE );
     }
 
-    private void StopDrive() {
+    public void StopDrive() {
         LeftBack.setPower ( 0.0 );
         LeftForward.setPower ( 0.0 );
         RightForward.setPower ( 0.0 );

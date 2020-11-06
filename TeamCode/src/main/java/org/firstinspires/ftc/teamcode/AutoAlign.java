@@ -42,8 +42,8 @@ public class AutoAlign extends LinearOpMode {
     private Orientation angles;
     public Orientation lastAngle = new Orientation();
 
-    double inchesToVerticalAlignment = 64;
-    double inchesToHorizontalAlignment = 31;
+    public double inchesToVerticalAlignment = 64;
+    public double inchesToHorizontalAlignment = 31;
 
 
     private ElapsedTime runtime = new ElapsedTime();
