@@ -6,7 +6,6 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -22,7 +21,6 @@ import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
-import org.openftc.easyopencv.OpenCvInternalCamera;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -32,18 +30,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
-import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
-
-import org.firstinspires.ftc.teamcode.util.Util;
-import org.firstinspires.ftc.teamcode.AutoAlign;
-
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.SplittableRandom;
 
 @Autonomous(name = "meetAuto", group = "")
 public class meetAuto extends LinearOpMode {
@@ -62,6 +48,11 @@ public class meetAuto extends LinearOpMode {
     boolean turnToDrop = true;
     int encodersToDrop;
 
+    //Align Variables
+    public double inchesToVerticalAlignment = 64;
+    public double inchesToHorizontalAlignment = 31;
+
+    // PID/IMU Variables
     public BNO055IMU imu;
     double globalAngle, correction, rotation;
     private Orientation angles;
@@ -69,6 +60,7 @@ public class meetAuto extends LinearOpMode {
     PIDController drive;
     PIDController strafe;
 
+    //Resolution for OpenCV
     private final int rows = 640;
     private final int cols = 480;
     OpenCvCamera webcam;
@@ -143,19 +135,21 @@ public class meetAuto extends LinearOpMode {
         while (!(isStopRequested() || isStarted())) {
 
             //Update Neccessary Variables depending on Ring Configuration
-            if (pipeline.position == RingDeterminationPipeline.RingConfiguration.C) {
-                turnToDrop = false;
+            if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.C) {
 
-            } else if (pipeline.position == RingDeterminationPipeline.RingConfiguration.B) {
+                encodersToDrop = 1300;
+
+            } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.B) {
 
                 encodersToDrop = 650;
 
-            } else if (pipeline.position == RingDeterminationPipeline.RingConfiguration.A){
-                encodersToDrop = 1300;
+            } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.A){
+
+                turnToDrop = false;
             }
 
             telemetry.addData("Value", pipeline.getAnalysis());
-            telemetry.addData("ringConfig", pipeline.position);
+            telemetry.addData("ringConfig", pipeline.configuration);
             telemetry.addData("encodersToDrop", encodersToDrop);
             telemetry.addData(">>>", "INITIALIZATION COMPLETED");
             telemetry.update();
@@ -167,8 +161,6 @@ public class meetAuto extends LinearOpMode {
 
             shoot();
 
-            stop();
-/*
             //1.Go Forward A little
                 moveDistance(FORWARD, 0.7, 15);
 
@@ -185,15 +177,15 @@ public class meetAuto extends LinearOpMode {
 
             //5. Drop Goal
 
+                sleep(2000);
 
-            //6. Go To Launch Line
-                moveEncoders(BACKWARD, 0.7, 500);
+            //6. Go To Launch Line && Align For Shooting
 
-            //7. Align For Shooting
+                align(0.7);
 
             //8. Shoot
+
                 shoot();
-*/
 
         }
     }
@@ -369,7 +361,7 @@ public class meetAuto extends LinearOpMode {
 
     public void moveDistance(int Direction, double Power, double distance){
         if (Direction == FORWARDWITHFRONT) {
-            while (opModeIsActive() && BackDistance.getDistance(DistanceUnit.INCH) < distance) {
+            while (opModeIsActive() && FrontDistance.getDistance(DistanceUnit.INCH) < distance) {
                 correction = drive.performPID(getAngle());
 
                 LeftForward.setPower(Power + correction);
@@ -386,7 +378,7 @@ public class meetAuto extends LinearOpMode {
                 telemetry.update();
             }
         } if (Direction == FORWARD) {
-            while (opModeIsActive() && FrontDistance.getDistance(DistanceUnit.INCH) < distance) {
+            while (opModeIsActive() && BackDistance.getDistance(DistanceUnit.INCH) < distance) {
                 correction = drive.performPID(getAngle());
 
                 LeftForward.setPower(Power + correction);
@@ -461,7 +453,7 @@ public class meetAuto extends LinearOpMode {
     public static class RingDeterminationPipeline extends OpenCvPipeline
     {
         /*
-         * An enum to define the ring position
+         * An enum to define the ring configuration
          */
         public enum RingConfiguration
         {
@@ -503,7 +495,7 @@ public class meetAuto extends LinearOpMode {
         int avg1;
 
         // Volatile since accessed by OpMode thread w/o synchronization
-        private volatile RingConfiguration position = RingConfiguration.C;
+        private volatile RingConfiguration configuration = RingConfiguration.C;
 
         /*
          * This function takes the RGB frame, converts to YCrCb,
@@ -537,13 +529,14 @@ public class meetAuto extends LinearOpMode {
                     BLACK, // The color the rectangle is drawn in
                     2); // Thickness of the rectangle lines
 
-            position = RingConfiguration.C; // Record our configuration
+            configuration = RingConfiguration.C; // Record our configuration
+
             if(avg1 > FOUR_RING_THRESHOLD){
-                position = RingConfiguration.C;
+                configuration = RingConfiguration.C;
             }else if (avg1 > ONE_RING_THRESHOLD){
-                position = RingConfiguration.B;
+                configuration = RingConfiguration.B;
             }else{
-                position = RingConfiguration.A;
+                configuration = RingConfiguration.A;
             }
 
             Imgproc.rectangle(
@@ -586,7 +579,7 @@ public class meetAuto extends LinearOpMode {
         Conveyor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         Conveyor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        Conveyor.setTargetPosition(300);
+        Conveyor.setTargetPosition(400);
 
         Conveyor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
@@ -605,7 +598,7 @@ public class meetAuto extends LinearOpMode {
 
         Shooter.setPower(-1);
 
-        sleep(100);
+        sleep(700);
 
         Conveyor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
@@ -624,4 +617,43 @@ public class meetAuto extends LinearOpMode {
         Shooter.setPower(0);
 
     }
+
+    public void align(double power) {
+        LeftForward.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        LeftForward.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        //Turn Right until 0
+
+        LeftForward.setPower(0.5);
+        LeftBack.setPower(0.5);
+        RightForward.setPower(-0.5);
+        RightBack.setPower(-0.5);
+
+        while (Math.abs(getAngle()) > 5) {
+            telemetry.addData("Action", "Turning");
+            telemetry.update();
+        }
+
+        LeftForward.setPower(0);
+        RightForward.setPower(0);
+        LeftBack.setPower(0);
+        RightBack.setPower(0);
+
+        //Move to Launch Line Vertically
+        moveDistance(BACKWARD, 0.7, inchesToVerticalAlignment);
+
+        //Align Horizontally for Shooting
+
+        if (RightDistance.getDistance(DistanceUnit.INCH) < inchesToHorizontalAlignment) {
+            moveDistance(LEFT, 0.7, inchesToHorizontalAlignment);
+        } else if (RightDistance.getDistance(DistanceUnit.INCH) > inchesToHorizontalAlignment) {
+            moveDistance(RIGHT, 0.7, inchesToHorizontalAlignment);
+        }
+
+        LeftForward.setPower(0);
+        RightForward.setPower(0);
+        LeftBack.setPower(0);
+        RightBack.setPower(0);
+    }
+
 }
