@@ -153,4 +153,5 @@ public class EasyOpenCVRingDetector extends LinearOpMode
             return avg1;
         }
     }
+
 }

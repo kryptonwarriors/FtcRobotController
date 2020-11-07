@@ -47,19 +47,20 @@ import java.util.SplittableRandom;
 
 @Autonomous(name = "meetAuto", group = "")
 public class meetAuto extends LinearOpMode {
-    public DcMotor LeftForward, LeftBack, RightForward, RightBack, Wobbler, Ringer;
+    public DcMotor LeftForward, LeftBack, RightForward, RightBack, Wobbler, Ringer, Intake, Conveyor, Shooter;
     public Servo WobbleClamper, RingClamper;
-    public DistanceSensor BackDistance, RightDistance;
+    public DistanceSensor BackDistance, RightDistance, FrontDistance;
     int FORWARD = 0;
     int BACKWARD = 1;
     int LEFT = 2;
     int RIGHT = 3;
     int LTURN = 4;
     int RTURN = 5;
+    int FORWARDWITHFRONT;
 
     //Variabliity Variables
-    boolean turnToDrop = false;
-    double distanceToStrafeToZone;
+    boolean turnToDrop = true;
+    int encodersToDrop;
 
     public BNO055IMU imu;
     double globalAngle, correction, rotation;
@@ -74,8 +75,6 @@ public class meetAuto extends LinearOpMode {
     RingDeterminationPipeline pipeline;
 
     public ElapsedTime runtime = new ElapsedTime();
-    public Util util = new Util(runtime, hardwareMap );
-    public AutoAlign align = new AutoAlign();
 
 
     @Override
@@ -84,6 +83,11 @@ public class meetAuto extends LinearOpMode {
         RightForward = hardwareMap.dcMotor.get("RightForward");
         LeftBack = hardwareMap.dcMotor.get("LeftBack");
         RightBack = hardwareMap.dcMotor.get("RightBack");
+
+
+        Intake = hardwareMap.dcMotor.get("Intake");
+        Conveyor = hardwareMap.dcMotor.get("Conveyor");
+        Shooter = hardwareMap.dcMotor.get("Shooter");
        /*
         Wobbler = hardwareMap.dcMotor.get("Wobbler");
         Ringer = hardwareMap.dcMotor.get("Ringer");
@@ -91,11 +95,13 @@ public class meetAuto extends LinearOpMode {
         WobbleClamper = hardwareMap.servo.get("WobbleClamper");
         RingClamper = hardwareMap.servo.get("RingClamper");
 */
-        RightDistance = hardwareMap.get(DistanceSensor.class, "RightDistance");
-        BackDistance = hardwareMap.get(DistanceSensor.class, "BackDistance");
+       // RightDistance = hardwareMap.get(DistanceSensor.class, "RightDistance");
+        //BackDistance = hardwareMap.get(DistanceSensor.class, "BackDistance");
+        //FrontDistance = hardwareMap.get(DistanceSensor.class, "FrontDistance");
 
         LeftForward.setDirection(DcMotor.Direction.REVERSE);
         LeftBack.setDirection(DcMotor.Direction.REVERSE);
+
 
         //initialize IMU
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -108,6 +114,20 @@ public class meetAuto extends LinearOpMode {
         imu = hardwareMap.get(BNO055IMU.class, "imu");
 
         imu.initialize(parameters);
+
+        strafe = new PIDController(0, 0, 0);
+        strafe.setSetpoint(0);
+        strafe.setOutputRange(0, 0.75);
+        strafe.setInputRange(-90, 90);
+        strafe.enable();
+
+        drive = new PIDController(0, 0, 0);
+        drive.setSetpoint(0);
+        drive.setOutputRange(0, 0.75);
+        drive.setInputRange(-90, 90);
+        drive.enable();
+
+
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(
@@ -124,16 +144,19 @@ public class meetAuto extends LinearOpMode {
 
             //Update Neccessary Variables depending on Ring Configuration
             if (pipeline.position == RingDeterminationPipeline.RingConfiguration.C) {
+                turnToDrop = false;
 
             } else if (pipeline.position == RingDeterminationPipeline.RingConfiguration.B) {
-                turnToDrop = true;
+
+                encodersToDrop = 650;
+
             } else if (pipeline.position == RingDeterminationPipeline.RingConfiguration.A){
-                distanceToStrafeToZone = 30;
+                encodersToDrop = 1300;
             }
 
             telemetry.addData("Value", pipeline.getAnalysis());
             telemetry.addData("ringConfig", pipeline.position);
-            telemetry.addData("distanceToStrafe", distanceToStrafeToZone);
+            telemetry.addData("encodersToDrop", encodersToDrop);
             telemetry.addData(">>>", "INITIALIZATION COMPLETED");
             telemetry.update();
 
@@ -142,41 +165,35 @@ public class meetAuto extends LinearOpMode {
 
         while (opModeIsActive()) {
 
+            shoot();
+
+            stop();
+/*
             //1.Go Forward A little
-                moveDistance(FORWARD, 0.7, 15, 1000);
+                moveDistance(FORWARD, 0.7, 15);
 
-            //2. Rotate
+            //2. Strafe Right To Wall
+                moveDistance(RIGHT, 0.7, 15);
 
-                LeftForward.setPower(0.5);
-                LeftBack.setPower(0.5);
-                RightForward.setPower(0.5);
-                RightBack.setPower(0.5);
+            //3. Go To Middle of Target Zones
+                moveDistance(FORWARDWITHFRONT, 0.5, 24);
 
-                while (getAngle() > -72) {
-                    telemetry.addData("angle", getAngle());
-                    telemetry.update();
-                }
-                util.StopDrive();
-
-            //3. Backward to Wall
-                moveDistance(BACKWARD, 0.5, 4, 500);
-
-            //4. Strafe to Zone
-                moveDistance(RIGHT, 0.7, distanceToStrafeToZone, 500000000);
-
-            //4.5 Rotate 180 degrees if needed to drop Wobble Goal in Zone B
+            //4. Rotate To Drop Wobble Goal
                 if (turnToDrop) {
-                    //Rotate 180 with IMU
+                    moveEncoders(RTURN, 0.6, encodersToDrop);
                 }
 
             //5. Drop Goal
 
+
             //6. Go To Launch Line
-                moveDistance(LEFT, 0.7, align.inchesToVerticalAlignment, 500000000);
+                moveEncoders(BACKWARD, 0.7, 500);
 
             //7. Align For Shooting
 
             //8. Shoot
+                shoot();
+*/
 
         }
     }
@@ -350,8 +367,8 @@ public class meetAuto extends LinearOpMode {
 
     }
 
-    public void moveDistance(int Direction, double Power, double distance, int safetyTargetPosition){
-        if (Direction == FORWARD) {
+    public void moveDistance(int Direction, double Power, double distance){
+        if (Direction == FORWARDWITHFRONT) {
             while (opModeIsActive() && BackDistance.getDistance(DistanceUnit.INCH) < distance) {
                 correction = drive.performPID(getAngle());
 
@@ -368,12 +385,29 @@ public class meetAuto extends LinearOpMode {
                 telemetry.addData("RightDistance", BackDistance.getDistance(DistanceUnit.INCH));
                 telemetry.update();
             }
-        } else if (Direction == BACKWARD) {
+        } if (Direction == FORWARD) {
+            while (opModeIsActive() && FrontDistance.getDistance(DistanceUnit.INCH) < distance) {
+                correction = drive.performPID(getAngle());
+
+                LeftForward.setPower(Power + correction);
+                LeftBack.setPower(Power + correction);
+                RightForward.setPower(Power - correction);
+                RightBack.setPower(Power - correction);
+
+                telemetry.addData("correction", correction);
+                telemetry.addData("LeftForward", LeftForward.getPower());
+                telemetry.addData("RightForward", RightForward.getPower());
+                telemetry.addData("LeftBack", LeftBack.getPower());
+                telemetry.addData("RightBack", RightBack.getPower());
+                telemetry.addData("RightDistance", BackDistance.getDistance(DistanceUnit.INCH));
+                telemetry.update();
+            }
+        }else if (Direction == BACKWARD) {
             while (opModeIsActive() && BackDistance.getDistance(DistanceUnit.INCH) > distance) {
                 correction = drive.performPID(getAngle());
 
-                LeftForward.setPower(-Power - correction);
-                LeftBack.setPower(-Power - correction);
+                LeftForward.setPower(-Power + correction);
+                LeftBack.setPower(-Power + correction);
                 RightForward.setPower(-Power + correction);
                 RightBack.setPower(-Power + correction);
 
@@ -389,23 +423,6 @@ public class meetAuto extends LinearOpMode {
             while (opModeIsActive() && RightDistance.getDistance(DistanceUnit.INCH) > distance) {
                 correction = strafe.performPID(getAngle());
 
-                LeftForward.setPower(-Power + correction);
-                LeftBack.setPower(Power + correction);
-                RightForward.setPower(Power - correction);
-                RightBack.setPower(-Power - correction);
-
-                telemetry.addData("correction", correction);
-                telemetry.addData("LeftForward", LeftForward.getPower());
-                telemetry.addData("RightForward", RightForward.getPower());
-                telemetry.addData("LeftBack", LeftBack.getPower());
-                telemetry.addData("RightBack", RightBack.getPower());
-                telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
-                telemetry.update();
-            }
-        } else if (Direction == LEFT) {
-            while (opModeIsActive() && RightDistance.getDistance(DistanceUnit.INCH) < distance) {
-                correction = strafe.performPID(getAngle());
-
                 LeftForward.setPower(Power + correction);
                 LeftBack.setPower(-Power + correction);
                 RightForward.setPower(-Power - correction);
@@ -419,9 +436,25 @@ public class meetAuto extends LinearOpMode {
                 telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
                 telemetry.update();
             }
+        } else if (Direction == LEFT) {
+            while (opModeIsActive() && RightDistance.getDistance(DistanceUnit.INCH) < distance) {
+                correction = strafe.performPID(getAngle());
+
+                LeftForward.setPower(-Power + correction);
+                LeftBack.setPower(Power + correction);
+                RightForward.setPower(Power - correction);
+                RightBack.setPower(-Power - correction);
+
+                telemetry.addData("correction", correction);
+                telemetry.addData("LeftForward", LeftForward.getPower());
+                telemetry.addData("RightForward", RightForward.getPower());
+                telemetry.addData("LeftBack", LeftBack.getPower());
+                telemetry.addData("RightBack", RightBack.getPower());
+                telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
+                telemetry.update();
+            }
         }
 
-        util.StopDrive();
 
     }
 
@@ -546,5 +579,49 @@ public class meetAuto extends LinearOpMode {
         lastAngles = angles;
 
         return globalAngle;
+    }
+
+    public void shoot(){
+
+        Conveyor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        Conveyor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        Conveyor.setTargetPosition(300);
+
+        Conveyor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        Intake.setPower(0.7);
+        Conveyor.setPower(0.7);
+
+        while (opModeIsActive() && !isStopRequested() && Math.abs(Conveyor.getCurrentPosition()) <= Math.abs(Conveyor.getTargetPosition())) {
+            telemetry.addData("Bringing", "Rings Down");
+            telemetry.addData("Conveyer Target Position", Conveyor.getTargetPosition());
+            telemetry.addData("Conveyor Current Position", Conveyor.getCurrentPosition());
+            telemetry.update();
+        }
+
+        Intake.setPower(0);
+        Conveyor.setPower(0);
+
+        Shooter.setPower(-1);
+
+        sleep(100);
+
+        Conveyor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        Conveyor.setTargetPosition(-2000);
+        Conveyor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        Intake.setPower(0.7);
+        Conveyor.setPower(0.7);
+
+        while (opModeIsActive() && !isStopRequested() && Math.abs(Conveyor.getCurrentPosition()) <= Math.abs(Conveyor.getTargetPosition())) {
+
+        }
+
+        Intake.setPower(0);
+        Conveyor.setPower(0);
+        Shooter.setPower(0);
+
     }
 }

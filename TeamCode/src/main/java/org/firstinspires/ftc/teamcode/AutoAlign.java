@@ -15,6 +15,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.util.PIDController;
+
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
@@ -41,6 +43,8 @@ public class AutoAlign extends LinearOpMode {
     double globalAngle, correction, rotation;
     private Orientation angles;
     public Orientation lastAngle = new Orientation();
+    PIDController strafe;
+    PIDController drive;
 
     public double inchesToVerticalAlignment = 64;
     public double inchesToHorizontalAlignment = 31;
@@ -67,14 +71,14 @@ public class AutoAlign extends LinearOpMode {
         LeftBack.setDirection(DcMotor.Direction.REVERSE);
 
     }
-/*
+
     //TODO create conversion from distance measured initially and convert to encoders needed to move
     public void align(double power) {
         LeftForward.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         LeftForward.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         while (opModeIsActive() && (BackDistance.getDistance(DistanceUnit.INCH) < inchesToVerticalAlignment)) {
-            correction = pidDrive.performPID(getAngle());
+           // correction = drive.performPID(getAngle());
 
             LeftForward.setPower(power + correction);
             LeftBack.setPower(power + correction);
@@ -92,7 +96,7 @@ public class AutoAlign extends LinearOpMode {
         if (RightDistance.getDistance(DistanceUnit.INCH) < inchesToHorizontalAlignment){
             //Strafe Left to desired Horizontal Location
             while (opModeIsActive() && (BackDistance.getDistance(DistanceUnit.INCH) < inchesToHorizontalAlignment)) {
-                correction = pidDrive.performPID(getAngle());
+             //   correction = pidDrive.performPID(getAngle());
 
                 LeftForward.setPower(power + correction);
                 LeftBack.setPower(power + correction);
@@ -110,7 +114,7 @@ public class AutoAlign extends LinearOpMode {
         } else if (RightDistance.getDistance(DistanceUnit.INCH) > inchesToHorizontalAlignment){
             //Strafe Right to desired Horizontal Location
             while (opModeIsActive() && (BackDistance.getDistance(DistanceUnit.INCH) > inchesToHorizontalAlignment)) {
-                correction = pidDrive.performPID(getAngle());
+            //    correction = strafe.performPID(getAngle());
 
                 LeftForward.setPower(power + correction);
                 LeftBack.setPower(power + correction);
@@ -131,7 +135,7 @@ public class AutoAlign extends LinearOpMode {
         LeftBack.setPower(0);
         RightBack.setPower(0);
     }
-    */
+
 }
 
 
