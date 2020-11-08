@@ -42,7 +42,11 @@ public class meetAuto extends LinearOpMode {
     int RIGHT = 3;
     int LTURN = 4;
     int RTURN = 5;
-    int FORWARDWITHFRONT;
+    int FORWARDWITHFRONT = 6;
+    int Forward = 7;
+    int Backward = 8;
+    int Right = 9;
+    int Left = 10;
 
     //Variabliity Variables
     boolean turnToDrop = true;
@@ -82,14 +86,14 @@ public class meetAuto extends LinearOpMode {
         Shooter = hardwareMap.dcMotor.get("Shooter");
        /*
         Wobbler = hardwareMap.dcMotor.get("Wobbler");
-        Ringer = hardwareMap.dcMotor.get("Ringer");
+        Ringer= hardwareMap.dcMotor.get("Ringer");
 
         WobbleClamper = hardwareMap.servo.get("WobbleClamper");
         RingClamper = hardwareMap.servo.get("RingClamper");
 */
-       // RightDistance = hardwareMap.get(DistanceSensor.class, "RightDistance");
-        //BackDistance = hardwareMap.get(DistanceSensor.class, "BackDistance");
-        //FrontDistance = hardwareMap.get(DistanceSensor.class, "FrontDistance");
+       RightDistance = hardwareMap.get(DistanceSensor.class, "RightDistance");
+       BackDistance = hardwareMap.get(DistanceSensor.class, "BackDistance");
+       FrontDistance = hardwareMap.get(DistanceSensor.class, "FrontDistance");
 
         LeftForward.setDirection(DcMotor.Direction.REVERSE);
         LeftBack.setDirection(DcMotor.Direction.REVERSE);
@@ -132,7 +136,7 @@ public class meetAuto extends LinearOpMode {
 
 
         //Initialization
-        while (!(isStopRequested() || isStarted())) {
+        while (!isStopRequested() || !isStarted()) {
 
             //Update Neccessary Variables depending on Ring Configuration
             if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.C) {
@@ -153,20 +157,20 @@ public class meetAuto extends LinearOpMode {
             telemetry.addData("encodersToDrop", encodersToDrop);
             telemetry.addData(">>>", "INITIALIZATION COMPLETED");
             telemetry.update();
-
-            sleep(50);
         }
 
         while (opModeIsActive()) {
 
-            shoot();
+            /*telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
+            telemetry.addData("BackDistance", BackDistance.getDistance(DistanceUnit.INCH));
+            telemetry.addData("FrontDistance", FrontDistance.getDistance(DistanceUnit.INCH));
+            telemetry.update();*/
 
-            //1.Go Forward A little
-                moveDistance(FORWARD, 0.7, 15);
+            /*//1.Go Forward A little
+                moveDistance(Forward, 0.25, 15.0);
 
             //2. Strafe Right To Wall
-                moveDistance(RIGHT, 0.7, 15);
-
+                moveDistance(Right, 0.25, 10);*/
             //3. Go To Middle of Target Zones
                 moveDistance(FORWARDWITHFRONT, 0.5, 24);
 
@@ -175,7 +179,7 @@ public class meetAuto extends LinearOpMode {
                     moveEncoders(RTURN, 0.6, encodersToDrop);
                 }
 
-            //5. Drop Goal
+            /*//5. Drop Goal
 
                 sleep(2000);
 
@@ -185,7 +189,7 @@ public class meetAuto extends LinearOpMode {
 
             //8. Shoot
 
-                shoot();
+                shoot();*/
 
         }
     }
@@ -361,7 +365,7 @@ public class meetAuto extends LinearOpMode {
 
     public void moveDistance(int Direction, double Power, double distance){
         if (Direction == FORWARDWITHFRONT) {
-            while (opModeIsActive() && FrontDistance.getDistance(DistanceUnit.INCH) < distance) {
+            while (opModeIsActive() && FrontDistance.getDistance(DistanceUnit.INCH) > distance) {
                 correction = drive.performPID(getAngle());
 
                 LeftForward.setPower(Power + correction);
@@ -374,10 +378,10 @@ public class meetAuto extends LinearOpMode {
                 telemetry.addData("RightForward", RightForward.getPower());
                 telemetry.addData("LeftBack", LeftBack.getPower());
                 telemetry.addData("RightBack", RightBack.getPower());
-                telemetry.addData("RightDistance", BackDistance.getDistance(DistanceUnit.INCH));
+                telemetry.addData("FrontDistance", FrontDistance.getDistance(DistanceUnit.INCH));
                 telemetry.update();
             }
-        } if (Direction == FORWARD) {
+        } else if (Direction == Forward) {
             while (opModeIsActive() && BackDistance.getDistance(DistanceUnit.INCH) < distance) {
                 correction = drive.performPID(getAngle());
 
@@ -391,10 +395,10 @@ public class meetAuto extends LinearOpMode {
                 telemetry.addData("RightForward", RightForward.getPower());
                 telemetry.addData("LeftBack", LeftBack.getPower());
                 telemetry.addData("RightBack", RightBack.getPower());
-                telemetry.addData("RightDistance", BackDistance.getDistance(DistanceUnit.INCH));
+                telemetry.addData("BackDistance", BackDistance.getDistance(DistanceUnit.INCH));
                 telemetry.update();
             }
-        }else if (Direction == BACKWARD) {
+        }else if (Direction == Backward) {
             while (opModeIsActive() && BackDistance.getDistance(DistanceUnit.INCH) > distance) {
                 correction = drive.performPID(getAngle());
 
@@ -411,14 +415,14 @@ public class meetAuto extends LinearOpMode {
                 telemetry.addData("RightDistance", BackDistance.getDistance(DistanceUnit.INCH));
                 telemetry.update();
             }
-        } else if (Direction == RIGHT) {
+        } else if (Direction == Right) {
             while (opModeIsActive() && RightDistance.getDistance(DistanceUnit.INCH) > distance) {
                 correction = strafe.performPID(getAngle());
 
-                LeftForward.setPower(Power + correction);
+                LeftForward.setPower(Power - correction);
                 LeftBack.setPower(-Power + correction);
                 RightForward.setPower(-Power - correction);
-                RightBack.setPower(Power - correction);
+                RightBack.setPower(Power + correction);
 
                 telemetry.addData("correction", correction);
                 telemetry.addData("LeftForward", LeftForward.getPower());
@@ -428,7 +432,7 @@ public class meetAuto extends LinearOpMode {
                 telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
                 telemetry.update();
             }
-        } else if (Direction == LEFT) {
+        } else if (Direction == Left) {
             while (opModeIsActive() && RightDistance.getDistance(DistanceUnit.INCH) < distance) {
                 correction = strafe.performPID(getAngle());
 
@@ -445,8 +449,14 @@ public class meetAuto extends LinearOpMode {
                 telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
                 telemetry.update();
             }
+
+
         }
 
+        LeftForward.setPower(0);
+        LeftBack.setPower(0);
+        RightForward.setPower(0);
+        RightBack.setPower(0);
 
     }
 

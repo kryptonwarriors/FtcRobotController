@@ -38,13 +38,18 @@ public class BuildersTeleOp_AS extends LinearOpMode {
     Shooter = hardwareMap.dcMotor.get("Shooter");
 
     Wobbler = hardwareMap.dcMotor.get("Wobbler");
-/*
+
     WobbleClamper = hardwareMap.servo.get("WobbleClamper");
-    
+    /*
     Ringer = hardwareMap.dcMotor.get("Ringer");
     RingClamper = hardwareMap.servo.get("RingClamper");
     
     */
+
+    LeftForward.setDirection(DcMotor.Direction.REVERSE);
+    LeftBack.setDirection(DcMotor.Direction.REVERSE);
+
+
     RightForward.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     RightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     LeftForward.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -52,9 +57,9 @@ public class BuildersTeleOp_AS extends LinearOpMode {
 
     Intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     Shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    Wobbler.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-
-    
+    WobbleClamper.setPosition(0.1);
     
     RightForward.setPower(0);
     RightBack.setPower(0);
@@ -72,20 +77,20 @@ public class BuildersTeleOp_AS extends LinearOpMode {
       while (opModeIsActive()) {
        if(gamepad1.right_trigger > 0.01){
          // Strafing to the Right
-        LeftForward.setPower(-Multiplier * Scale(gamepad1.right_trigger));
-        LeftBack.setPower(Multiplier * Scale(gamepad1.right_trigger));
-        RightForward.setPower(Multiplier * Scale(gamepad1.right_trigger));
-        RightBack.setPower(-Multiplier * Scale(gamepad1.right_trigger));
+        LeftForward.setPower(Multiplier * Scale(gamepad1.right_trigger));
+        LeftBack.setPower(-Multiplier * Scale(gamepad1.right_trigger));
+        RightForward.setPower(-Multiplier * Scale(gamepad1.right_trigger));
+        RightBack.setPower(Multiplier * Scale(gamepad1.right_trigger));
        } else if(gamepad1.left_trigger > 0.01){
         // Strafing to the Left
-        LeftForward.setPower(Multiplier * Scale(gamepad1.left_trigger));
-        LeftBack.setPower(-Multiplier * Scale(gamepad1.left_trigger));
-        RightForward.setPower(-Multiplier * Scale(gamepad1.left_trigger));
-        RightBack.setPower(Multiplier * Scale(gamepad1.left_trigger));
+        LeftForward.setPower(-Multiplier * Scale(gamepad1.left_trigger));
+        LeftBack.setPower(Multiplier * Scale(gamepad1.left_trigger));
+        RightForward.setPower(Multiplier * Scale(gamepad1.left_trigger));
+        RightBack.setPower(-Multiplier * Scale(gamepad1.left_trigger));
       } //DcMotor Wobble Goal
-       else if (gamepad1.dpad_down) {
-           RightBack.setPower(-0.3);
-           RightForward.setPower(-0.3);
+       else if (gamepad1.dpad_up) {
+           RightBack.setPower(0.3);
+           RightForward.setPower(0.3);
            LeftForward.setPower(0.3);
            LeftBack.setPower(0.3);
         /*RightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -95,9 +100,9 @@ public class BuildersTeleOp_AS extends LinearOpMode {
         RightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         RightBack.setPower(0.75);*/
 
-       } else if (gamepad1.dpad_up) {
-           RightBack.setPower(0.3);
-           RightForward.setPower(0.3);
+       } else if (gamepad1.dpad_down) {
+           RightBack.setPower(-0.3);
+           RightForward.setPower(-0.3);
            LeftForward.setPower(-0.3);
            LeftBack.setPower(-0.3);
 
@@ -107,28 +112,27 @@ public class BuildersTeleOp_AS extends LinearOpMode {
         RightBack.setTargetPosition(-500);
         RightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         RightBack.setPower(0.75);*/
-       } else if (gamepad1.left_bumper){
-           RightBack.setPower(-0.7);
-           RightForward.setPower(-0.7);
-           LeftForward.setPower(-0.7);
-           LeftBack.setPower(-0.7);
-       } else if (gamepad1.right_bumper) {
+       } else if (gamepad1.right_bumper){
            RightBack.setPower(0.7);
-           RightForward.setPower(0.7);
+           RightForward.setPower(-0.7);
            LeftForward.setPower(0.7);
+           LeftBack.setPower(-0.7);
+       } else if (gamepad1.left_bumper) {
+           RightBack.setPower(-0.7);
+           RightForward.setPower(0.7);
+           LeftForward.setPower(-0.7);
            LeftBack.setPower(0.7);
        }else {
-        RightBack.setPower(Multiplier * Scale(gamepad1.right_stick_y));
-        RightForward.setPower(Multiplier * Scale(gamepad1.right_stick_y));
-        LeftForward.setPower(Multiplier * Scale(gamepad1.left_stick_y));
-        LeftBack.setPower(Multiplier * Scale(gamepad1.left_stick_y));
+        RightBack.setPower(-Multiplier * Scale(gamepad1.right_stick_y));
+        RightForward.setPower(-Multiplier * Scale(gamepad1.right_stick_y));
+        LeftForward.setPower(-Multiplier * Scale(gamepad1.left_stick_y));
+        LeftBack.setPower(-Multiplier * Scale(gamepad1.left_stick_y));
         /*Ringer.setPower(gamepad2.left_stick_y);
         Wobbler.setPower(gamepad2.right_stick_y);*/
       }
 
 
 
-      //Wobble Goal Attachment
       if (gamepad2.left_stick_y > 0.01 || gamepad2.left_stick_y < -0.01) {
           Intake.setPower(-Multiplier * Scale(gamepad2.left_stick_y));
           Conveyor.setPower(Multiplier * Scale(gamepad2.left_stick_y));
@@ -138,7 +142,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
       }
 
       if (gamepad2.right_stick_y > 0.01 || gamepad2.right_stick_y < -0.01) {
-         Wobbler.setPower(gamepad2.right_stick_y);
+         Wobbler.setPower(-gamepad2.right_stick_y);
       } else {
         Wobbler.setPower(0);
       }
@@ -147,6 +151,12 @@ public class BuildersTeleOp_AS extends LinearOpMode {
           Shooter.setPower(-1);
       } else{
           Shooter.setPower(0);
+      }
+
+      if (gamepad2.left_bumper) { //OUT
+        WobbleClamper.setPosition(0.1);
+      } else if (gamepad2.right_bumper){ //IN
+          WobbleClamper.setPosition(0.28);
       }
 
       telemetry.addData("Conveyor + Intake", Conveyor.getPower());
