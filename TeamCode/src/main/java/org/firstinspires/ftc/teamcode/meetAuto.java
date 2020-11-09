@@ -48,6 +48,7 @@ public class meetAuto extends LinearOpMode {
 
     //Variabliity Variables
     boolean turnToDrop = true;
+    boolean ringConfigB;
     int encodersToDrop;
 
     //Align Variables
@@ -135,15 +136,18 @@ public class meetAuto extends LinearOpMode {
             if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.C) {
 
                 turnToDrop = false;
+                ringConfigB = false;
 
             } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.B) {
 
-                encodersToDrop = 400;
+                encodersToDrop = 300;
+                ringConfigB = true;
                 turnToDrop = true;
 
             } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.A){
 
-                encodersToDrop = 800;
+                encodersToDrop = 1000;
+                ringConfigB = false;
                 turnToDrop = true;
             }
 
@@ -159,13 +163,13 @@ public class meetAuto extends LinearOpMode {
 
         if (opModeIsActive() && !isStopRequested()) {
 
-            strafe = new PIDController(0.0016367, 0.00016367, 0);
+            strafe = new PIDController(0.0016367*2, 0.00016367, 0.000016367);
             strafe.setSetpoint(0);
             strafe.setOutputRange(0, 0.75);
             strafe.setInputRange(-90, 90);
             strafe.enable();
 
-            drive = new PIDController(0.016367, 0.0016367*4, 0.000016367);
+            drive = new PIDController(0.016367*2, 0.0016367*4, 0.00016367);
             drive.setSetpoint(0);
             drive.setOutputRange(0, 0.75);
             drive.setInputRange(-90, 90);
@@ -199,12 +203,27 @@ public class meetAuto extends LinearOpMode {
             //4. Rotate To Drop Wobble Goal
             if (turnToDrop) {
                 moveEncoders(LTURN, 0.6, encodersToDrop);
-                moveEncoders(Forward, 0.6, 50);
+                moveEncoders(Forward, 0.6, 100);
             }
+
+
+            //TODO Adjust Config C and overall PID
+            moveEncoders(RTURN, 0.6, 50);
+
+
 
             //5. Drop Goal
 
             dropWobbleGoal();
+
+            sleep(1000);
+
+            if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.B) {
+                moveEncoders(BACKWARD, 0.7, 300);
+                sleep(500);
+            } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.C) {
+                moveEncoders(BACKWARD, 0.7, 400);
+            }
 
 /*
 
@@ -731,11 +750,11 @@ public class meetAuto extends LinearOpMode {
 
         Shooter.setPower(-1);
 
-        sleep(1000);
+        sleep(2000);
 
         Conveyor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        Conveyor.setTargetPosition(-2000);
+        Conveyor.setTargetPosition(-2500);
         Conveyor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         Intake.setPower(0.9);
@@ -801,12 +820,11 @@ public class meetAuto extends LinearOpMode {
         Wobbler.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
 
-        Wobbler.setTargetPosition(-1600);
+        Wobbler.setTargetPosition(-2400);
 
         Wobbler.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         Wobbler.setPower(1);
-        openWobbleClamper();
 
         while (opModeIsActive() && Math.abs(Wobbler.getCurrentPosition()) < Math.abs(Wobbler.getTargetPosition())) {
             telemetry.addData("Dropping", "Right Now");
@@ -814,6 +832,7 @@ public class meetAuto extends LinearOpMode {
         }
 
         Wobbler.setPower(0);
+        openWobbleClamper();
     }
 
     private void resetAngle()
