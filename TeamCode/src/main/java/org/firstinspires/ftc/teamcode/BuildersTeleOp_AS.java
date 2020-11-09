@@ -156,7 +156,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
       if (gamepad2.left_bumper) { //OUT
         WobbleClamper.setPosition(0.1);
       } else if (gamepad2.right_bumper){ //IN
-          WobbleClamper.setPosition(0.28);
+          WobbleClamper.setPosition(0.48);
       }
 
       telemetry.addData("Conveyor + Intake", Conveyor.getPower());
