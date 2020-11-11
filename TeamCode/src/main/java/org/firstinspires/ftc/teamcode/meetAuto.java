@@ -105,6 +105,8 @@ public class meetAuto extends LinearOpMode {
         Wobbler.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 
+        closeWobbleClamper();
+
         //initialize IMU
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
 
@@ -126,7 +128,6 @@ public class meetAuto extends LinearOpMode {
         webcam.setPipeline(pipeline);//different stages
         webcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
 
-        closeWobbleClamper();
 
 
         //Initialization
@@ -146,7 +147,7 @@ public class meetAuto extends LinearOpMode {
 
             } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.A){
 
-                encodersToDrop = 1000;
+                encodersToDrop = 1100;
                 ringConfigB = false;
                 turnToDrop = true;
             }
@@ -203,7 +204,7 @@ public class meetAuto extends LinearOpMode {
             //4. Rotate To Drop Wobble Goal
             if (turnToDrop) {
                 moveEncoders(LTURN, 0.6, encodersToDrop);
-                moveEncoders(Forward, 0.6, 100);
+                moveEncoders(Forward, 0.6, 390);
             }
 
 
@@ -223,6 +224,8 @@ public class meetAuto extends LinearOpMode {
                 sleep(500);
             } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.C) {
                 moveEncoders(BACKWARD, 0.7, 400);
+            } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.A) {
+                moveEncoders(RIGHT, 0.6, 100);
             }
 
 /*
@@ -735,7 +738,7 @@ public class meetAuto extends LinearOpMode {
 
         Conveyor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        Intake.setPower(-0.2);
+        Intake.setPower(-0.25);
         Conveyor.setPower(0.9);
 
         while (opModeIsActive() && !isStopRequested() && Math.abs(Conveyor.getCurrentPosition()) <= Math.abs(Conveyor.getTargetPosition())) {
@@ -748,7 +751,7 @@ public class meetAuto extends LinearOpMode {
         Intake.setPower(0);
         Conveyor.setPower(0);
 
-        Shooter.setPower(-1);
+        Shooter.setPower(-0.9);
 
         sleep(2000);
 
@@ -820,7 +823,7 @@ public class meetAuto extends LinearOpMode {
         Wobbler.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
 
-        Wobbler.setTargetPosition(-2400);
+        Wobbler.setTargetPosition(-4000);
 
         Wobbler.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
