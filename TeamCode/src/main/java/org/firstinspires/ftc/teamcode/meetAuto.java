@@ -67,7 +67,7 @@ public class meetAuto extends LinearOpMode {
     private final int rows = 640;
     private final int cols = 480;
     OpenCvCamera webcam;
-    RingDeterminationPipeline pipeline;
+    public RingDeterminationPipeline pipeline;
 
     public ElapsedTime runtime = new ElapsedTime();
 
@@ -136,6 +136,7 @@ public class meetAuto extends LinearOpMode {
             //Update Neccessary Variables depending on Ring Configuration
             if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.C) {
 
+                encodersToDrop = 0;
                 turnToDrop = false;
                 ringConfigB = false;
 
@@ -156,6 +157,7 @@ public class meetAuto extends LinearOpMode {
             telemetry.addData("ringConfig", pipeline.configuration);
             telemetry.addData("encodersToDrop", encodersToDrop);
             telemetry.addData("turnToDrop", turnToDrop);
+            telemetry.addData("getAngle", getAngle());
             telemetry.addData(">>>", "INITIALIZATION COMPLETED");
             telemetry.update();
 
@@ -163,6 +165,8 @@ public class meetAuto extends LinearOpMode {
         }
 
         if (opModeIsActive() && !isStopRequested()) {
+
+            webcam.stopStreaming();
 
             strafe = new PIDController(0.0016367*2, 0.00016367, 0.000016367);
             strafe.setSetpoint(0);
@@ -186,7 +190,7 @@ public class meetAuto extends LinearOpMode {
 
 
             //1.Go Forward A little
-            moveDistanceWithOutPID(FORWARD, 0.4, 25);
+            moveDistance(FORWARD, 0.4, 25);
 
             shoot();
 
@@ -201,17 +205,21 @@ public class meetAuto extends LinearOpMode {
 
             sleep(800);
 
+
             //4. Rotate To Drop Wobble Goal
             if (turnToDrop) {
                 moveEncoders(LTURN, 0.6, encodersToDrop);
-                moveEncoders(Forward, 0.6, 390);
             }
 
+            if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.A){
+                moveEncoders(Forward, 0.6, 390);
+            } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.C){
+                moveEncoders(Forward, 0.6, 300);
+            }
 
+            sleep(200);
             //TODO Adjust Config C and overall PID
-            moveEncoders(RTURN, 0.6, 50);
-
-
+            moveEncoders(RTURN, 0.6, 100);
 
             //5. Drop Goal
 
@@ -219,9 +227,12 @@ public class meetAuto extends LinearOpMode {
 
             sleep(1000);
 
+            //6. Go To Launchline
+
             if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.B) {
-                moveEncoders(BACKWARD, 0.7, 300);
+                moveEncoders(BACKWARD, 0.7, 100);
                 sleep(500);
+                moveEncoders(LEFT, 0.7, 350);
             } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.C) {
                 moveEncoders(BACKWARD, 0.7, 400);
             } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.A) {
@@ -626,13 +637,13 @@ public class meetAuto extends LinearOpMode {
         /*
          * The core values which define the location and size of the sample regions
          */
-        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(200,280);
+        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(135,210);
 
-        static final int REGION_WIDTH = 90;
-        static final int REGION_HEIGHT = 55;
+        static final int REGION_WIDTH = 95;
+        static final int REGION_HEIGHT = 70;
 
-        final int FOUR_RING_THRESHOLD = 150;
-        final int ONE_RING_THRESHOLD = 135;
+        final int FOUR_RING_THRESHOLD = 149;
+        final int ONE_RING_THRESHOLD = 132;
 
         Point region1_pointA = new Point(
                 REGION1_TOPLEFT_ANCHOR_POINT.x,
@@ -650,7 +661,7 @@ public class meetAuto extends LinearOpMode {
         int avg1;
 
         // Volatile since accessed by OpMode thread w/o synchronization
-        private volatile RingConfiguration configuration = RingConfiguration.C;
+        public volatile RingConfiguration configuration = RingConfiguration.C;
 
         /*
          * This function takes the RGB frame, converts to YCrCb,
@@ -757,7 +768,7 @@ public class meetAuto extends LinearOpMode {
 
         Conveyor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        Conveyor.setTargetPosition(-2500);
+        Conveyor.setTargetPosition(-5000);
         Conveyor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         Intake.setPower(0.9);
@@ -773,18 +784,35 @@ public class meetAuto extends LinearOpMode {
 
     }
 
-    public void align(double power) {
+    public void align(double power) throws InterruptedException{
+
+        double angle;
+        angle = getAngle();
+
         LeftForward.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         LeftForward.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         //Turn Right until 0
 
-        LeftForward.setPower(0.5);
-        LeftBack.setPower(0.5);
-        RightForward.setPower(-0.5);
-        RightBack.setPower(-0.5);
 
-        while (Math.abs(getAngle()) > 5) {
+
+        while (Math.abs(angle) > 5) {
+
+            if (angle > 0 ) {
+                LeftForward.setPower(0.5);
+                LeftBack.setPower(0.5);
+                RightForward.setPower(-0.5);
+                RightBack.setPower(-0.5);
+            } else if (angle < 0 ) {
+                LeftForward.setPower(-0.5);
+                LeftBack.setPower(-0.5);
+                RightForward.setPower(0.5);
+                RightBack.setPower(0.5);
+            }
+
+            sleep(10);
+
+            angle = getAngle();
             telemetry.addData("Action", "Turning");
             telemetry.update();
         }
@@ -812,7 +840,7 @@ public class meetAuto extends LinearOpMode {
     }
 
     public void closeWobbleClamper() {
-        WobbleClamper.setPosition(0.48);
+        WobbleClamper.setPosition(0.62);
     }
 
     public void openWobbleClamper () {
@@ -823,7 +851,7 @@ public class meetAuto extends LinearOpMode {
         Wobbler.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
 
-        Wobbler.setTargetPosition(-4000);
+        Wobbler.setTargetPosition(-8000);
 
         Wobbler.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 

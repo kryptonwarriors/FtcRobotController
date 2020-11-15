@@ -7,18 +7,34 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @TeleOp(name = "BuildersTeleOp_AS", group = "")
 public class BuildersTeleOp_AS extends LinearOpMode {
 
   private DcMotor RightForward, RightBack, LeftForward, LeftBack, Intake, Shooter, Conveyor, Wobbler;
   private Servo WobbleClamper, RingClamper;
+  private DistanceSensor BackDistance, RightDistance;
   private ElapsedTime runtime = new ElapsedTime();
   private double Multiplier = 0.7;
   public double contPower;
+    int FORWARD = 0;
+    int BACKWARD = 1;
+    int LEFT = 2;
+    int RIGHT = 3;
+    int LTURN = 4;
+    int RTURN = 5;
+    int FORWARDWITHFRONT = 6;
+    int Forward = 7;
+
+    //Align Variables
+    public double inchesToVerticalAlignment = 64;
+    public double inchesToHorizontalAlignment = 31;
 
  private double Scale (double Input) {
       double Output = Input * Math.abs(Input);
@@ -38,6 +54,10 @@ public class BuildersTeleOp_AS extends LinearOpMode {
     Shooter = hardwareMap.dcMotor.get("Shooter");
 
     Wobbler = hardwareMap.dcMotor.get("Wobbler");
+
+      RightDistance = hardwareMap.get(DistanceSensor.class, "RightDistance");
+      BackDistance = hardwareMap.get(DistanceSensor.class, "BackDistance");
+
 
     WobbleClamper = hardwareMap.servo.get("WobbleClamper");
     /*
@@ -122,7 +142,10 @@ public class BuildersTeleOp_AS extends LinearOpMode {
            RightForward.setPower(0.7);
            LeftForward.setPower(-0.7);
            LeftBack.setPower(0.7);
-       }else {
+       } else if (gamepad1.y){
+           align(0.7);
+          }
+       else {
         RightBack.setPower(-Multiplier * Scale(gamepad1.right_stick_y));
         RightForward.setPower(-Multiplier * Scale(gamepad1.right_stick_y));
         LeftForward.setPower(-Multiplier * Scale(gamepad1.left_stick_y));
@@ -133,21 +156,21 @@ public class BuildersTeleOp_AS extends LinearOpMode {
 
 
 
-      if (gamepad2.left_stick_y > 0.01 || gamepad2.left_stick_y < -0.01) {
-          Intake.setPower(-Multiplier * Scale(gamepad2.left_stick_y));
-          Conveyor.setPower(Multiplier * Scale(gamepad2.left_stick_y));
+      if (gamepad2.right_stick_y > 0.01 || gamepad2.right_stick_y < -0.01) {
+          Intake.setPower(-(Multiplier + 0.1) * Scale(gamepad2.right_stick_y));
+          Conveyor.setPower((Multiplier + 0.1) * Scale(gamepad2.right_stick_y));
       } else {
           Intake.setPower(0);
           Conveyor.setPower(0);
       }
 
-      if (gamepad2.right_stick_y > 0.01 || gamepad2.right_stick_y < -0.01) {
-         Wobbler.setPower(-gamepad2.right_stick_y);
+      if (gamepad2.left_stick_y > 0.01 || gamepad2.left_stick_y < -0.01) {
+         Wobbler.setPower(-gamepad2.left_stick_y);
       } else {
         Wobbler.setPower(0);
       }
 
-      if (gamepad2.a) {
+      if (gamepad2.dpad_up) {
           Shooter.setPower(-0.8);
       } else{
           Shooter.setPower(0);
@@ -156,7 +179,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
       if (gamepad2.left_bumper) { //OUT
         WobbleClamper.setPosition(0.1);
       } else if (gamepad2.right_bumper){ //IN
-          WobbleClamper.setPosition(0.48);
+          WobbleClamper.setPosition(0.56);
       }
 
       telemetry.addData("Conveyor + Intake", Conveyor.getPower());
@@ -188,5 +211,120 @@ public class BuildersTeleOp_AS extends LinearOpMode {
         telemetry.update();
       }
     }
+
+
+
   }
+
+    public void moveDistance(int Direction, double Power, double distance){
+
+        LeftForward.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+
+         if (Direction == FORWARD) {
+            while (opModeIsActive() && BackDistance.getDistance(DistanceUnit.INCH) < distance) {
+
+
+                LeftForward.setPower(Power);
+                LeftBack.setPower(Power);
+                RightForward.setPower(Power);
+                RightBack.setPower(Power);
+
+                telemetry.addData("LeftForward", LeftForward.getPower());
+                telemetry.addData("RightForward", RightForward.getPower());
+                telemetry.addData("LeftBack", LeftBack.getPower());
+                telemetry.addData("RightBack", RightBack.getPower());
+                telemetry.addData("BackDistance", BackDistance.getDistance(DistanceUnit.INCH));
+                telemetry.update();
+            }
+        }else if (Direction == BACKWARD) {
+            while (opModeIsActive() && BackDistance.getDistance(DistanceUnit.INCH) > distance) {
+
+
+                LeftForward.setPower(-Power);
+                LeftBack.setPower(-Power);
+                RightForward.setPower(-Power);
+                RightBack.setPower(-Power);
+
+                telemetry.addData("LeftForward", LeftForward.getPower());
+                telemetry.addData("RightForward", RightForward.getPower());
+                telemetry.addData("LeftBack", LeftBack.getPower());
+                telemetry.addData("RightBack", RightBack.getPower());
+                telemetry.addData("RightDistance", BackDistance.getDistance(DistanceUnit.INCH));
+                telemetry.update();
+            }
+        } else if (Direction == RIGHT) {
+            while (opModeIsActive() && RightDistance.getDistance(DistanceUnit.INCH) > distance) {
+
+
+                LeftForward.setPower(Power);
+                LeftBack.setPower(-Power);
+                RightForward.setPower(-Power);
+                RightBack.setPower(Power);
+
+                telemetry.addData("LeftForward", LeftForward.getPower());
+                telemetry.addData("RightForward", RightForward.getPower());
+                telemetry.addData("LeftBack", LeftBack.getPower());
+                telemetry.addData("RightBack", RightBack.getPower());
+                telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
+                telemetry.update();
+            }
+        } else if (Direction == LEFT) {
+            while (opModeIsActive() && RightDistance.getDistance(DistanceUnit.INCH) < distance) {
+
+
+                LeftForward.setPower(-Power);
+                LeftBack.setPower(Power);
+                RightForward.setPower(Power);
+                RightBack.setPower(-Power);
+
+                telemetry.addData("LeftForward", LeftForward.getPower());
+                telemetry.addData("RightForward", RightForward.getPower());
+                telemetry.addData("LeftBack", LeftBack.getPower());
+                telemetry.addData("RightBack", RightBack.getPower());
+                telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
+                telemetry.update();
+            }
+        }
+
+        LeftForward.setPower(0);
+        LeftBack.setPower(0);
+        RightForward.setPower(0);
+        RightBack.setPower(0);
+    }
+
+
+    public void align(double power) {
+
+
+        LeftForward.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        LeftForward.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+
+        LeftForward.setPower(0);
+        RightForward.setPower(0);
+        LeftBack.setPower(0);
+        RightBack.setPower(0);
+
+        //Move to Launch Line Vertically
+        moveDistance(FORWARD, 0.7, inchesToVerticalAlignment);
+
+        sleep(700);
+
+        //Align Horizontally for Shooting
+
+        if (RightDistance.getDistance(DistanceUnit.INCH) < inchesToHorizontalAlignment) {
+            moveDistance(LEFT, 0.7, inchesToHorizontalAlignment);
+        } else if (RightDistance.getDistance(DistanceUnit.INCH) > inchesToHorizontalAlignment) {
+            moveDistance(RIGHT, 0.7, inchesToHorizontalAlignment + 2);
+        }
+
+        LeftForward.setPower(0);
+        RightForward.setPower(0);
+        LeftBack.setPower(0);
+        RightBack.setPower(0);
+    }
+
 }
+
+
