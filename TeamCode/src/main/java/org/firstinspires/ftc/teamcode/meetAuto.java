@@ -49,6 +49,7 @@ public class meetAuto extends LinearOpMode {
     //Variabliity Variables
     boolean turnToDrop = true;
     boolean ringConfigB;
+    boolean RingConfigA;
     int encodersToDrop;
 
     //Align Variables
@@ -137,6 +138,7 @@ public class meetAuto extends LinearOpMode {
             if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.C) {
 
                 encodersToDrop = 0;
+                RingConfigA = false;
                 turnToDrop = false;
                 ringConfigB = false;
 
@@ -144,12 +146,14 @@ public class meetAuto extends LinearOpMode {
 
                 encodersToDrop = 300;
                 ringConfigB = true;
+                RingConfigA = false;
                 turnToDrop = true;
 
             } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.A){
 
-                encodersToDrop = 1100;
+                encodersToDrop = 1000;
                 ringConfigB = false;
+                RingConfigA = true;
                 turnToDrop = true;
             }
 
@@ -190,7 +194,7 @@ public class meetAuto extends LinearOpMode {
 
 
             //1.Go Forward A little
-            moveDistance(FORWARD, 0.4, 25);
+            moveDistanceWithOutPID(FORWARD, 0.4, 25);
 
             shoot();
 
@@ -211,15 +215,17 @@ public class meetAuto extends LinearOpMode {
                 moveEncoders(LTURN, 0.6, encodersToDrop);
             }
 
-            if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.A){
+            if (RingConfigA){
                 moveEncoders(Forward, 0.6, 390);
-            } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.C){
+            } else if (!RingConfigA && !ringConfigB){
                 moveEncoders(Forward, 0.6, 300);
             }
 
             sleep(200);
-            //TODO Adjust Config C and overall PID
-            moveEncoders(RTURN, 0.6, 100);
+
+            if (!ringConfigB) {
+                moveEncoders(RTURN, 0.5, 140);
+            }
 
             //5. Drop Goal
 
@@ -232,11 +238,15 @@ public class meetAuto extends LinearOpMode {
             if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.B) {
                 moveEncoders(BACKWARD, 0.7, 100);
                 sleep(500);
-                moveEncoders(LEFT, 0.7, 350);
+                moveEncoders(LEFT, 0.7, 450);
             } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.C) {
                 moveEncoders(BACKWARD, 0.7, 400);
             } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.A) {
+                moveEncoders(BACKWARD, 0.6, 50);
+                sleep(200);
                 moveEncoders(RIGHT, 0.6, 100);
+                sleep(200);
+                moveEncoders(Forward, 0.6, 400);
             }
 
 /*
