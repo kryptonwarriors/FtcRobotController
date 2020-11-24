@@ -768,7 +768,7 @@ public class meetAuto extends LinearOpMode {
 
         Conveyor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        Conveyor.setTargetPosition(-5000);
+        Conveyor.setTargetPosition(-7000);
         Conveyor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         Intake.setPower(0.9);
