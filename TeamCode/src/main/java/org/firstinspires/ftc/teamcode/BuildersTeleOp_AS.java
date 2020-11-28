@@ -80,7 +80,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
     Shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     Wobbler.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-    WobbleClamper.setPosition(0.1);
+    WobbleClamper.setPosition(0.3);
     
     RightForward.setPower(0);
     RightBack.setPower(0);
@@ -95,7 +95,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
     telemetry.update();
     waitForStart();
     if (opModeIsActive()) {
-      while (opModeIsActive()) {
+        while (opModeIsActive()) {
        if(gamepad1.right_trigger > 0.01){
          // Strafing to the Right
         LeftForward.setPower(-Multiplier * Scale(gamepad1.right_trigger));
@@ -144,7 +144,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
            LeftForward.setPower(-0.7);
            LeftBack.setPower(0.7);
        } else if (gamepad1.y) {
-            align(0.7);
+            dropWobbleGoal();
        } else if (gamepad1.dpad_left) {
            RightForward.setPower(-0.7);
            LeftBack.setPower(-0.7);
@@ -184,9 +184,9 @@ public class BuildersTeleOp_AS extends LinearOpMode {
       }
 
       if (gamepad2.left_bumper) { //OUT
-        WobbleClamper.setPosition(0.1);
+        WobbleClamper.setPosition(0.3);
       } else if (gamepad2.right_bumper){ //IN
-          WobbleClamper.setPosition(0.56);
+          WobbleClamper.setPosition(0.84);
       }
 
       telemetry.addData("Conveyor + Intake", Conveyor.getPower());
@@ -332,6 +332,27 @@ public class BuildersTeleOp_AS extends LinearOpMode {
         RightBack.setPower(0);
     }
 
+    public void dropWobbleGoal() {
+        Wobbler.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+
+        Wobbler.setTargetPosition(-8000);
+
+        Wobbler.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        Wobbler.setPower(1);
+
+        while (opModeIsActive() && Math.abs(Wobbler.getCurrentPosition()) < Math.abs(Wobbler.getTargetPosition())) {
+            telemetry.addData("Dropping", "Right Now");
+            telemetry.update();
+        }
+
+        Wobbler.setPower(0);
+        WobbleClamper.setPosition(0.3);
+    }
+
 }
+
+
 
 
