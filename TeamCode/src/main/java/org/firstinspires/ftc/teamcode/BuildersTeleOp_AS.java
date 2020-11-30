@@ -19,7 +19,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
 
   private DcMotor RightForward, RightBack, LeftForward, LeftBack, Intake, Shooter, Conveyor, Wobbler;
   private Servo WobbleClamper, RingClamper;
-  private DistanceSensor BackDistance, RightDistance;
+  private DistanceSensor BackDistance, RightDistance, FrontDistance, LeftDistance;
   private ElapsedTime runtime = new ElapsedTime();
   private double Multiplier = 0.7;
   public double contPower;
@@ -57,6 +57,8 @@ public class BuildersTeleOp_AS extends LinearOpMode {
 
       RightDistance = hardwareMap.get(DistanceSensor.class, "RightDistance");
       BackDistance = hardwareMap.get(DistanceSensor.class, "BackDistance");
+      FrontDistance = hardwareMap.get(DistanceSensor.class, "FrontDistance");
+      LeftDistance = hardwareMap.get(DistanceSensor.class, "LeftDistance");
 
 
     WobbleClamper = hardwareMap.servo.get("WobbleClamper");
@@ -165,7 +167,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
 
       if (gamepad2.right_stick_y > 0.01 || gamepad2.right_stick_y < -0.01) {
           Intake.setPower(0.8 * Scale(gamepad2.right_stick_y));
-          Conveyor.setPower(-1 * Scale(gamepad2.right_stick_y));
+          Conveyor.setPower(-0.7 * Scale(gamepad2.right_stick_y));
       } else {
           Intake.setPower(0);
           Conveyor.setPower(0);
@@ -178,7 +180,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
       }
 
       if (gamepad2.dpad_up) {
-          Shooter.setPower(-1);
+          Shooter.setPower(-0.776);
       } else{
           Shooter.setPower(0);
       }
@@ -209,7 +211,9 @@ public class BuildersTeleOp_AS extends LinearOpMode {
       
 
 
-
+        telemetry.addData("LeftDistance", LeftDistance.getDistance(DistanceUnit.INCH));
+        telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
+        telemetry.addData("BackDistance", BackDistance.getDistance(DistanceUnit.INCH));
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.addData("RightForward", RightForward.getPower());
         telemetry.addData("LeftForward", LeftForward.getPower());
