@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
-// import Rahuls's Genius & IQ
+// import Rahul's Genius & IQ
 // import GOAT || AMAN
+// import Da One And Only Muthu
 //import com.qualcomm.robotcore.brain.Moni;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -180,9 +181,10 @@ public class BuildersTeleOp_AS extends LinearOpMode {
       }
 
       if (gamepad2.dpad_up) {
-          Shooter.setPower(-0.83);
+          //Shooter.setPower(-0.83);
+          Shooter.setPower(-0.98);
       } else if (gamepad2.dpad_left) {
-          Shooter.setPower(-0.79);
+          Shooter.setPower(-0.92);
       } else {
           Shooter.setPower(0);
       }

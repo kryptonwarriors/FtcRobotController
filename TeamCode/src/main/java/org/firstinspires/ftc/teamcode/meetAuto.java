@@ -163,14 +163,14 @@ public class meetAuto extends LinearOpMode {
             } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.B) {
 
                 encodersToDrop = 280;
-                angleToDrop = 50;
+                angleToDrop = 65;
                 configuration = "B";
                 position = 2;
 
             } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.A){
 
                 encodersToDrop = 940;
-                angleToDrop = 170;
+                angleToDrop = 160;
                configuration = "A";
                position = 1;
             }
@@ -218,14 +218,16 @@ public class meetAuto extends LinearOpMode {
            moveDistance(FORWARD, 0.4, 7);
 
             shoot2();
-/*
+
+         sleep(800);
+
             //Diagonally Strafe to the Wall
            moveDistance(UPRIGHT, 0.82, 15);
 
            sleep(300);
 
            //Go to Middle of Target Zones
-            moveDistance(FORWARDWITHFRONT, 0.75, 50);
+            moveDistance(FORWARDWITHFRONT, 0.5, 50);
 
             sleep(300);
 
@@ -233,12 +235,12 @@ public class meetAuto extends LinearOpMode {
             if (position == 1 || position == 2){
                 imuTurn(LTURN, 0.75, angleToDrop);
             } else if (position == 3){
-                imuTurn(RTURN, 0.6, 30);
+                imuTurn(RTURN, 0.6, -40);
                 sleep(200);
             }
 
             sleep(200);
-
+            //if (!(position == 3))
             moveEncoders(Forward, 0.6, 200);
 
             sleep(500);
@@ -275,7 +277,7 @@ public class meetAuto extends LinearOpMode {
             }
 
             sleep(1000);
-*/
+
 /*
             telemetry.addData("BackDistance", BackDistance.getDistance(DistanceUnit.INCH));
             telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
@@ -972,48 +974,48 @@ public class meetAuto extends LinearOpMode {
         Shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         Conveyor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-
-        //bruh finally
-
         for (int i = 0; i<3; i++) {
 
-            if (i==0)
-                Conveyor.setTargetPosition(-70);
+
+                Conveyor.setTargetPosition(-65);
 
 
+                Conveyor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            Conveyor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                Intake.setPower(0.4);
+                Conveyor.setPower(0.9);
 
-            Intake.setPower(0.4);
-            Conveyor.setPower(0.9);
+                while (opModeIsActive() && !isStopRequested() && Math.abs(Conveyor.getCurrentPosition()) <= Math.abs(Conveyor.getTargetPosition())) {
+                    telemetry.addData("Bringing", "Rings Down");
+                    telemetry.addData("Conveyer Target Position", Conveyor.getTargetPosition());
+                    telemetry.addData("Conveyor Current Position", Conveyor.getCurrentPosition());
+                    telemetry.update();
+                }
 
-            while (opModeIsActive() && !isStopRequested() && Math.abs(Conveyor.getCurrentPosition()) <= Math.abs(Conveyor.getTargetPosition())) {
-                telemetry.addData("Bringing", "Rings Down");
-                telemetry.addData("Conveyer Target Position", Conveyor.getTargetPosition());
-                telemetry.addData("Conveyor Current Position", Conveyor.getCurrentPosition());
-                telemetry.update();
-            }
+                Intake.setPower(0);
+                Conveyor.setPower(0);
 
-            Intake.setPower(0);
-            Conveyor.setPower(0);
 
             if (i == 0)
-                Shooter.setPower(-0.573);
+                //Shooter.setPower(-0.79);
+                Shooter.setPower(-0.71);
             else if (i == 1)
-                Shooter.setPower(-0.55);
+                //Shooter.setPower(-0.78);
+                Shooter.setPower(-0.59);
             else
-                Shooter.setPower(-0.56);
+                //Shooter.setPower();
+                Shooter.setPower(-0.61);
 
             sleep(1300);
 
             Conveyor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
             if(i==2)
-                Conveyor.setTargetPosition(1800);
+                Conveyor.setTargetPosition(1000);
             else if (i == 1)
-                Conveyor.setTargetPosition(900);
+                Conveyor.setTargetPosition(550);
             else
-                Conveyor.setTargetPosition(500);
+                Conveyor.setTargetPosition(400);
 
 
             Conveyor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
