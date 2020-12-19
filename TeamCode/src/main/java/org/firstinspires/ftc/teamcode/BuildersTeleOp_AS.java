@@ -185,8 +185,8 @@ public class BuildersTeleOp_AS extends LinearOpMode {
 
                 if (gamepad2.dpad_up) {
                     Shooter.setPower(-1);
-                } else if (gamepad2.a) {
-                    Shooter.setPower(-0.2);
+                } else if (gamepad2.dpad_left) {
+                    Shooter.setPower(-0.6);
                 } else {
                     Shooter.setPower(0);
                 }
