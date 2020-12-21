@@ -13,7 +13,7 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.util.PIDController;
-/*import org.opencv.core.Core;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
@@ -23,7 +23,7 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
-*/
+
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -82,8 +82,8 @@ public class meetAuto extends LinearOpMode {
     //Resolution for OpenCV
     private final int rows = 640;
     private final int cols = 480;
-    //OpenCvCamera webcam;
-   // public RingDeterminationPipeline pipeline;
+    OpenCvCamera webcam;
+    public RingDeterminationPipeline pipeline;
 
     public ElapsedTime runtime = new ElapsedTime();
 
@@ -107,7 +107,7 @@ public class meetAuto extends LinearOpMode {
         RightDistance = hardwareMap.get(DistanceSensor.class, "RightDistance");
         BackDistance = hardwareMap.get(DistanceSensor.class, "BackDistance");
         FrontDistance = hardwareMap.get(DistanceSensor.class, "FrontDistance");
-        LeftDistance = hardwareMap.get(DistanceSensor.class, "FrontDistance");
+        LeftDistance = hardwareMap.get(DistanceSensor.class, "LeftDistance");
 
 
         RightForward.setDirection(DcMotor.Direction.REVERSE);
@@ -136,7 +136,7 @@ public class meetAuto extends LinearOpMode {
         imu = hardwareMap.get(BNO055IMU.class, "imu");
 
         imu.initialize(parameters);
-/*
+
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(
                 hardwareMap.get(WebcamName.class, "Webcam 1"),
@@ -146,14 +146,13 @@ public class meetAuto extends LinearOpMode {
         webcam.setPipeline(pipeline);//different stages
         webcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
 
-*/
+
 
         //Initialization
         while (!(isStopRequested() || isStarted())) {
 
-            position = 1;
 
-/*            //Update Neccessary Variables depending on Ring Configuration
+           //Update Neccessary Variables depending on Ring Configuration
             if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.C) {
 
                 encodersToDrop = 0;
@@ -176,8 +175,8 @@ public class meetAuto extends LinearOpMode {
                position = 1;
             }
 
-      */   //   telemetry.addData("Value", pipeline.getAnalysis());
-            //telemetry.addData("ringConfig", pipeline.configuration);
+            telemetry.addData("Value", pipeline.getAnalysis());
+            telemetry.addData("ringConfig", pipeline.configuration);
             telemetry.addData("LeftBackCurrentPosition", LeftBack.getCurrentPosition());
             telemetry.addData("encodersToDrop", encodersToDrop);
             telemetry.addData("turnToDrop", turnToDrop);
@@ -215,9 +214,6 @@ public class meetAuto extends LinearOpMode {
             diagonal.setInputRange(-90, 90);
             diagonal.enable();
 
-            powershot();
-
-/*
             moveDistance(RIGHT, 0.5, 7);
 
             sleep(300);
@@ -353,6 +349,112 @@ public class meetAuto extends LinearOpMode {
     //END
 
     //IF YOU FIND THIS COMMENT, TYPE varun likes men
+
+    public static class RingDeterminationPipeline extends OpenCvPipeline
+    {
+        /*
+         * An enum to define the ring configuration
+         */
+        public enum RingConfiguration
+        {
+            C,
+            B,
+            A
+        }
+
+        /*
+         * Some color constants
+         */
+
+        static final Scalar BLACK = new Scalar(0, 0, 0);
+        static final Scalar ORANGE = new Scalar(255, 110, 2);
+
+        /*
+         * The core values which define the location and size of the sample regions
+         */
+        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(30,250);
+
+        static final int REGION_WIDTH = 95;
+        static final int REGION_HEIGHT = 70;
+
+        final int FOUR_RING_THRESHOLD = 140;
+        final int ONE_RING_THRESHOLD = 130;
+
+        Point region1_pointA = new Point(
+                REGION1_TOPLEFT_ANCHOR_POINT.x,
+                REGION1_TOPLEFT_ANCHOR_POINT.y);
+        Point region1_pointB = new Point(
+                REGION1_TOPLEFT_ANCHOR_POINT.x + REGION_WIDTH,
+                REGION1_TOPLEFT_ANCHOR_POINT.y + REGION_HEIGHT);
+
+        /*
+         * Working variables
+         */
+        Mat region1_Cb;
+        Mat YCrCb = new Mat();
+        Mat Cb = new Mat();
+        int avg1;
+
+        // Volatile since accessed by OpMode thread w/o synchronization
+        public volatile RingConfiguration configuration = RingConfiguration.C;
+
+        /*
+         * This function takes the RGB frame, converts to YCrCb,
+         * and extracts the Cb channel to the 'Cb' variable
+         */
+        void inputToCb(Mat input)
+        {
+            Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
+            Core.extractChannel(YCrCb, Cb, 1);
+        }
+
+        @Override
+        public void init(Mat firstFrame)
+        {
+            inputToCb(firstFrame);
+
+            region1_Cb = Cb.submat(new Rect(region1_pointA, region1_pointB));
+        }
+
+        @Override
+        public Mat processFrame(Mat input)
+        {
+            inputToCb(input);
+
+            avg1 = (int) Core.mean(region1_Cb).val[0];
+
+            Imgproc.rectangle(
+                    input, // Buffer to draw on
+                    region1_pointA, // First point which defines the rectangle
+                    region1_pointB, // Second point which defines the rectangle
+                    BLACK, // The color the rectangle is drawn in
+                    2); // Thickness of the rectangle lines
+
+            configuration = RingConfiguration.C; // Record our configuration
+
+            if(avg1 > FOUR_RING_THRESHOLD){
+                configuration = RingConfiguration.C;
+            }else if (avg1 > ONE_RING_THRESHOLD){
+                configuration = RingConfiguration.B;
+            }else{
+                configuration = RingConfiguration.A;
+            }
+
+            Imgproc.rectangle(
+                    input, // Buffer to draw on
+                    region1_pointA, // First point which defines the rectangle
+                    region1_pointB, // Second point which defines the rectangle
+                    ORANGE, // The color the rectangle is drawn in
+                    5);
+
+            return input;
+        }
+
+        public int getAnalysis()
+        {
+            return avg1;
+        }
+    }
 
 
     public void moveEncoders(int Direction, double Power, int TargetPosition) {
