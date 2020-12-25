@@ -227,8 +227,8 @@ public class meetAuto extends LinearOpMode {
             diagonal.setInputRange(-90, 90);
             diagonal.enable();
 
-
-            moveDistance(RIGHT, 0.5, 7);
+            powershot();
+           /* moveDistance(RIGHT, 0.5, 7);
 
             sleep(300);
 
@@ -274,7 +274,7 @@ public class meetAuto extends LinearOpMode {
               //  telemetry.addData("position", pipeline.configuration);
                 telemetry.update();
                 moveEncoders(Forward, 0.7, 3000);
-            }
+            }*/
 
 
 
@@ -1054,7 +1054,7 @@ public class meetAuto extends LinearOpMode {
 
     public void shoot(){
 
-        Shooter.setPower(-1);
+        Shooter.setPower(-0.95);
 
         sleep(1600);
 
@@ -1167,7 +1167,12 @@ public class meetAuto extends LinearOpMode {
             Conveyor.setPower(0);
 
 
-            Shooter.setPower(-0.5);
+            if (i == 0)
+                Shooter.setPower(-0.52);
+            else if (i == 1)
+                Shooter.setPower(-0.5);
+            else
+                Shooter.setPower(-0.49);
 
             sleep(1300);
 
@@ -1197,7 +1202,7 @@ public class meetAuto extends LinearOpMode {
             sleep(400);
 
             if(i == 0){
-                imuTurn(LTURN, 0.4, 25);
+                imuTurn(LTURN, 0.4, 26);
                 resetAngle();
             } else if(i == 1){
                 imuTurn(LTURN, 0.4, 30);
