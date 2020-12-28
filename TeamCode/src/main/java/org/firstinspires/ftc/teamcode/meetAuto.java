@@ -1168,7 +1168,7 @@ public class meetAuto extends LinearOpMode {
 
 
             if (i == 0)
-                Shooter.setPower(-0.52);
+                Shooter.setPower(-0.5);
             else if (i == 1)
                 Shooter.setPower(-0.5);
             else
@@ -1202,10 +1202,10 @@ public class meetAuto extends LinearOpMode {
             sleep(400);
 
             if(i == 0){
-                imuTurn(LTURN, 0.4, 26);
+                imuTurn(LTURN, 0.4, 27);
                 resetAngle();
             } else if(i == 1){
-                imuTurn(LTURN, 0.4, 30);
+                imuTurn(LTURN, 0.4, 32);
                 resetAngle();
             }
             sleep(400);
