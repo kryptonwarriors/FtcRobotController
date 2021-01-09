@@ -33,8 +33,10 @@ import java.util.List;
  *
  */
 public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
-    public static double TICKS_PER_REV = 360;
+    public static double TICKS_PER_REV_PARALLEL = 1460;
+    public static double COUNTS_PER_INCH = 307.699557;
     public static double WHEEL_RADIUS = 0.748031; // in
+    public static double TICKS_PER_REV_PERPINDICULAR = COUNTS_PER_INCH * WHEEL_RADIUS * 2 * Math.PI;
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (encoder) speed
 
     public static double PARALLEL_X = 2.25; // X is the up and down direction
@@ -42,6 +44,9 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
 
     public static double PERPENDICULAR_X = 0;
     public static double PERPENDICULAR_Y = 0;
+
+    public static double X_MULTIPLIER = (48/187);
+    public static double Y_MULTIPLIER = 1;
 
     // Parallel/Perpendicular to the forward axis
     // Parallel wheel is parallel to the forward axis
@@ -58,16 +63,20 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
 
         this.drive = drive;
 
-        parallelEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "RightBack"));
-        perpendicularEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "LeftForward"));
+        parallelEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "LeftForward"));
+        perpendicularEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "RightForward"));
 
         // TODO: reverse any encoders using Encoder.setDirection(Encoder.Direction.REVERSE)
 
-        perpendicularEncoder.setDirection(Encoder.Direction.REVERSE);
+        //perpendicularEncoder.setDirection(Encoder.Direction.REVERSE);
     }
 
-    public static double encoderTicksToInches(double ticks) {
-        return WHEEL_RADIUS * 2 * Math.PI * GEAR_RATIO * ticks / TICKS_PER_REV;
+    public static double encoderTicksToInchesParallel(double ticks) {
+        return WHEEL_RADIUS * 2 * Math.PI * GEAR_RATIO * ticks / TICKS_PER_REV_PARALLEL;
+    }
+
+    public static double encoderTicksToInchesPerpendicular(double ticks) {
+        return WHEEL_RADIUS * 2 * Math.PI * GEAR_RATIO * ticks / TICKS_PER_REV_PERPINDICULAR;
     }
 
     @Override
@@ -79,8 +88,8 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
     @Override
     public List<Double> getWheelPositions() {
         return Arrays.asList(
-                encoderTicksToInches(parallelEncoder.getCurrentPosition()),
-                encoderTicksToInches(perpendicularEncoder.getCurrentPosition())
+                encoderTicksToInchesParallel(parallelEncoder.getCurrentPosition()),
+                encoderTicksToInchesPerpendicular(perpendicularEncoder.getCurrentPosition())
         );
     }
 
@@ -92,8 +101,8 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
         //  compensation method
 
         return Arrays.asList(
-                encoderTicksToInches(parallelEncoder.getRawVelocity()),
-                encoderTicksToInches(perpendicularEncoder.getRawVelocity())
+                encoderTicksToInchesParallel(parallelEncoder.getRawVelocity()),
+                encoderTicksToInchesPerpendicular(perpendicularEncoder.getRawVelocity())
         );
     }
 }
