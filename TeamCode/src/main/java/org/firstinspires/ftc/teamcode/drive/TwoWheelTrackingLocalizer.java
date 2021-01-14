@@ -36,7 +36,7 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
     public static double TICKS_PER_REV_PARALLEL = 1460;
     public static double COUNTS_PER_INCH = 307.699557;
     public static double WHEEL_RADIUS = 0.748031; // in
-    public static double TICKS_PER_REV_PERPINDICULAR = COUNTS_PER_INCH * WHEEL_RADIUS * 2 * Math.PI;
+    public static double TICKS_PER_REV_PERPINDICULAR = 1450;
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (encoder) speed
 
     public static double PARALLEL_X = 2.25; // X is the up and down direction
@@ -68,7 +68,7 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
 
         // TODO: reverse any encoders using Encoder.setDirection(Encoder.Direction.REVERSE)
 
-        //perpendicularEncoder.setDirection(Encoder.Direction.REVERSE);
+        perpendicularEncoder.setDirection(Encoder.Direction.REVERSE);
     }
 
     public static double encoderTicksToInchesParallel(double ticks) {
@@ -89,7 +89,7 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
     public List<Double> getWheelPositions() {
         return Arrays.asList(
                 encoderTicksToInchesParallel(parallelEncoder.getCurrentPosition()),
-                encoderTicksToInchesPerpendicular(perpendicularEncoder.getCurrentPosition())
+                encoderTicksToInchesPerpendicular(perpendicularEncoder.getCurrentPosition() * 1.7)
         );
     }
 

@@ -374,8 +374,6 @@ public class meetAuto extends LinearOpMode {
 
     //END
 
-    //IF YOU FIND THIS COMMENT, TYPE varun likes men
-
     public static class RingDeterminationPipeline extends OpenCvPipeline
     {
         /*
