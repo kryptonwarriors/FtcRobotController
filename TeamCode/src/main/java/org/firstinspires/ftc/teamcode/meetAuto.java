@@ -11,6 +11,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 
+import org.firstinspires.ftc.teamcode.util.Util;
+
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.util.PIDController;
 import org.opencv.core.Core;
@@ -35,7 +37,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import java.lang.annotation.Target;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-@Autonomous(name = "meetAuto", group = "")
+@Autonomous(name = "meetAuto", group = "autos")
 public class meetAuto extends LinearOpMode {
     public DcMotor LeftForward, LeftBack, RightForward, RightBack, Wobbler, Ringer, Intake, Conveyor, Shooter;
     public Servo WobbleClamper, RingClamper;
@@ -84,8 +86,6 @@ public class meetAuto extends LinearOpMode {
     PIDController diagonal;
 
     //Resolution for OpenCV
-    private final int rows = 640;
-    private final int cols = 480;
     OpenCvCamera webcam;
     public RingDeterminationPipeline pipeline;
 
@@ -94,11 +94,11 @@ public class meetAuto extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        LeftForward = hardwareMap.dcMotor.get("LeftForward");
-        RightForward = hardwareMap.dcMotor.get("RightForward");
-        LeftBack = hardwareMap.dcMotor.get("LeftBack");
-        RightBack = hardwareMap.dcMotor.get("RightBack");
 
+
+        Util util = new Util(runtime,hardwareMap);
+
+        util.InitHardwareMap();
 
         Intake = hardwareMap.dcMotor.get("Intake");
         Conveyor = hardwareMap.dcMotor.get("Conveyor");
@@ -128,18 +128,6 @@ public class meetAuto extends LinearOpMode {
 
 
         closeWobbleClamper();
-
-        //initialize IMU
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-
-        parameters.mode                = BNO055IMU.SensorMode.IMU;
-        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
-        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.loggingEnabled      = false;
-
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
-
-        imu.initialize(parameters);
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(
@@ -221,6 +209,7 @@ public class meetAuto extends LinearOpMode {
             backDrive.setInputRange(-90, 90);
             backDrive.enable();
 
+
             diagonal = new PIDController(0.016367*6, 0, 0);
             diagonal.setSetpoint(0);
             diagonal.setOutputRange(0, 0.75);
@@ -228,6 +217,9 @@ public class meetAuto extends LinearOpMode {
             diagonal.enable();
 
             powershot();
+
+
+
            /* moveDistance(RIGHT, 0.5, 7);
 
             sleep(300);
@@ -1325,6 +1317,8 @@ public class meetAuto extends LinearOpMode {
     }
 
     public void imuTurn(int direction, double power, double angle) {
+
+        resetAngle();
 
         if (direction == LTURN){
             LeftForward.setPower(-power);

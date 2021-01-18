@@ -378,6 +378,7 @@ public class SampleMecanumDrive extends MecanumDrive {
     }
 
     @Override
+    @NonNull
     public List<Double> getWheelVelocities() {
         List<Double> wheelVelocities = new ArrayList<>();
         for (DcMotorEx motor : motors) {
