@@ -34,6 +34,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
+import java.lang.annotation.Target;
+
 import static org.firstinspires.ftc.teamcode.drive.TwoWheelTrackingLocalizer.TICKS_PER_REV_PERPINDICULAR;
 import static org.firstinspires.ftc.teamcode.drive.TwoWheelTrackingLocalizer.TICKS_PER_REV_PARALLEL;
 import static org.firstinspires.ftc.teamcode.drive.TwoWheelTrackingLocalizer.WHEEL_RADIUS;
@@ -77,7 +79,16 @@ public class ThreePowerShot extends LinearOpMode {
     int TURNED_FORWARD = 12;
     int TURNED_BACKWARD = 13;
 
+    double angle;
+    public static int diagonalDistance;
+    public static int secondWobbleGoalDistance;
+    public static int secondWobbleEncoderDistance;
+    public static int position;
+
     final double turnThreshold = 25;
+
+    public static int encodersToDrop;
+    public static int angleToDrop;
 
     @Override
     public void runOpMode() throws InterruptedException{
@@ -142,10 +153,30 @@ public class ThreePowerShot extends LinearOpMode {
             //Update Neccessary Variables depending on Ring Configuration
             if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.C) {
 
+                encodersToDrop = 1250;
+                angleToDrop = -32;
+                diagonalDistance = 13;
+                secondWobbleGoalDistance = 45;
+                secondWobbleEncoderDistance = 600;
+                position = 3;
+
             } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.B) {
 
+                encodersToDrop = 450;
+                angleToDrop = -20;
+                diagonalDistance = 24;
+                secondWobbleGoalDistance = 45;
+                secondWobbleEncoderDistance = 50;
+                position = 2;
 
             } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.A){
+
+                encodersToDrop = 500;
+                angleToDrop = -77;
+                diagonalDistance = 15;
+                secondWobbleGoalDistance = 52;
+                secondWobbleEncoderDistance = 100;
+                position = 1;
 
             }
 
@@ -156,6 +187,8 @@ public class ThreePowerShot extends LinearOpMode {
             telemetry.addData("getAngle", getAngle());
             telemetry.addData("Leftbackposition", LeftBack.getCurrentPosition());
             telemetry.addData("Right Wheel", LeftForward.getCurrentPosition());
+            telemetry.addData("encodersToDrop", encodersToDrop);
+            telemetry.addData("angleToDrop", angleToDrop);
             telemetry.addData("FrontDistance", FrontDistance.getDistance(DistanceUnit.INCH));
             telemetry.addData("BackDistance", BackDistance.getDistance(DistanceUnit.INCH));
             telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
@@ -168,7 +201,7 @@ public class ThreePowerShot extends LinearOpMode {
 
         if (opModeIsActive() && !isStopRequested()) {
 
-            strafe = new PIDController(0.016367*1.4, 0.00016367*1.4, 0);
+            strafe = new PIDController(0.016367*1.7, 0.00016367*1.2, 0);
             strafe.setSetpoint(0);
             strafe.setOutputRange(0, 0.75);
             strafe.setInputRange(-90, 90);
@@ -194,13 +227,16 @@ public class ThreePowerShot extends LinearOpMode {
             diagonal.enable();
 
 
-            moveEncoders(Forward, 0.6, 1300);
+
+            moveEncoders(Forward, 0.6, 1190);
 
             sleep(200);
 
-            imuTurn(RTURN, 0.4, 0);
+            LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-            sleep(500);
+            imuTurn(RTURN, 0.2, 4);
+
+            sleep(200);
 
             LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
@@ -211,29 +247,95 @@ public class ThreePowerShot extends LinearOpMode {
             LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
             //C and B = -35
-            //A = -90
+            //A = -86
 
-            imuTurn(RTURN, 0.4, -86);
+            imuTurn(RTURN, 0.4, angleToDrop);
+
 
             //C = 1300
             //B = 450
             //A = 500
 
-            moveEncoders(TURNED_FORWARD, 0.6, 500);
+            moveEncoders(TURNED_FORWARD, 0.6, encodersToDrop);
 
             dropWobbleGoal();
 
-            sleep(100);
+
+            sleep(200);
+
+            if(position == 2 || position == 3) {
+
+                moveEncoders(TURNED_BACKWARD, 0.6, 200);
+
+                sleep(200);
+
+                LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+                imuTurn(RTURN, 0.5, -170);
+
+                sleep(200);
+
+                LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+                moveEncoders(UPLEFT, 0.8, diagonalDistance);
+
+                sleep(100);
+
+                LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+                imuTurn(RTURN, 0.4, -190);
+
+                LeftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+                LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+                LeftBack.setTargetPosition(secondWobbleEncoderDistance);
+
+                LeftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                angle = getAngle();
+
+                while (!isStopRequested() && Math.abs(LeftBack.getCurrentPosition()) <= Math.abs(LeftBack.getTargetPosition())) {
+
+                    correction = drive.performPID(getAngle() - angle);
+
+                    LeftForward.setPower(0.6 - correction);
+                    LeftBack.setPower(0.6 - correction);
+                    RightForward.setPower(0.6 + correction);
+                    RightBack.setPower(0.6 + correction);
+
+
+                    telemetry.addLine("going");
+                    telemetry.addData("correction", correction);
+                    telemetry.update();
+
+                }
+
+                moveEncoders(FORWARDWITHFRONT, 0.6, secondWobbleGoalDistance);
+
+            } else if (position == 1) {
+
+                LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+                LeftBack.setPower(-0.4);
+                LeftForward.setPower(-0.4);
+                RightForward.setPower(-0.4);
+                RightBack.setPower(-0.4);
+
+                sleep(1100);
+
+                LeftBack.setPower(0);
+                LeftForward.setPower(0);
+                RightForward.setPower(0);
+                RightBack.setPower(0);
+
+                sleep(100);
+
+                moveEncoders(RIGHT, 0.7, 23);
+
+            }
 
             liftWobbleGoal();
-
-
-
-            /*if (pipeline.configuration == meetAuto.RingDeterminationPipeline.RingConfiguration.B){ // Position B
-                moveEncoders(Forward, 0.6, 400);
-            } else if (pipeline.configuration == meetAuto.RingDeterminationPipeline.RingConfiguration.C) { // Position C
-                moveEncoders(Forward, 0.6, 800);
-            }*/
 
         }
 
@@ -271,7 +373,7 @@ public class ThreePowerShot extends LinearOpMode {
             RightBack.setPower(0);
 
 
-        } if (Direction == TURNED_FORWARD) {
+        } else if (Direction == TURNED_FORWARD) {
 
             LeftBack.setTargetPosition(TargetPosition);
 
@@ -302,30 +404,56 @@ public class ThreePowerShot extends LinearOpMode {
             RightBack.setPower(0);
 
 
-        } else if (Direction == BACKWARD) {
+        }else if (Direction == TURNED_BACKWARD) {
 
-            int ticks = inchesToTicksParallel(TargetPosition);
+            LeftBack.setTargetPosition(TargetPosition);
 
-            /* LeftForward.setTargetPosition(-TargetPosition);
-                RightForward.setTargetPosition(-TargetPosition);
-                RightBack.setTargetPosition(-TargetPosition);*/
-            LeftBack.setTargetPosition(-ticks);
-
-              /*  LeftForward.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                RightForward.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                RightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);*/
             LeftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
+            double angle = getAngle();
+
+            while (!isStopRequested() && Math.abs(LeftBack.getCurrentPosition()) <= Math.abs(LeftBack.getTargetPosition())) {
+
+                correction = backDrive.performPID(getAngle() - angle);
+
+                LeftForward.setPower(-Power);
+                LeftBack.setPower(-Power);
+                RightForward.setPower(-Power );
+                RightBack.setPower(-Power);
 
 
-            while (opModeIsActive() && !isStopRequested() && Math.abs(LeftBack.getCurrentPosition()) <= Math.abs(LeftBack.getTargetPosition())) {
+                telemetry.addLine("going");
+                telemetry.addData("correction", correction);
+                telemetry.update();
+
+            }
+
+            LeftForward.setPower(0);
+            RightForward.setPower(0);
+            LeftBack.setPower(0);
+            RightBack.setPower(0);
+
+
+        } else if (Direction == BACKWARD) {
+
+            LeftBack.setTargetPosition(TargetPosition);
+
+            LeftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            while (!isStopRequested() && Math.abs(LeftBack.getCurrentPosition()) <= Math.abs(LeftBack.getTargetPosition())) {
 
                 correction = drive.performPID(getAngle());
 
                 LeftForward.setPower(-Power);
-                LeftBack.setPower(Power );
+                LeftBack.setPower(-Power);
                 RightForward.setPower(-Power);
                 RightBack.setPower(-Power);
+
+
+                telemetry.addLine("going");
+                telemetry.addData("correction", correction);
+                telemetry.update();
+
             }
 
             LeftForward.setPower(0);
@@ -368,26 +496,16 @@ public class ThreePowerShot extends LinearOpMode {
 
         } else if (Direction == RIGHT) {
 
-            int ticks = inchesToTicksPerpindicular(TargetPosition);
+            LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-            /*LeftForward.setPower(TargetPosition);
-                RightForward.setPower(-TargetPosition);
-                RightBack.setPower(TargetPosition);*/
-            LeftBack.setTargetPosition(-ticks);
+            while (opModeIsActive() && RightDistance.getDistance(DistanceUnit.INCH) > TargetPosition) {
 
-                /*LeftForward.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                RightForward.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                RightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);*/
-            LeftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                correction = strafe.performPID(getAngle() + 90);
 
-            LeftForward.setPower(Power);
-            RightForward.setPower(-Power);
-            LeftBack.setPower(Power);
-            RightBack.setPower(Power);
-
-            while (opModeIsActive() && !isStopRequested() && Math.abs(LeftBack.getCurrentPosition()) <= Math.abs(LeftBack.getTargetPosition())) {
-
-                correction = strafe.performPID(getAngle());
+                LeftForward.setPower(Power - correction);
+                LeftBack.setPower(-Power - correction);
+                RightForward.setPower(-Power + correction);
+                RightBack.setPower(Power + correction);
 
                 telemetry.addLine("going");
                 telemetry.addData("correction", correction);
@@ -466,6 +584,46 @@ public class ThreePowerShot extends LinearOpMode {
             LeftBack.setPower(0);
             RightBack.setPower(0);
         }
+        else if (Direction == UPLEFT) {
+
+            LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+            double angle = getAngle();
+
+            while (opModeIsActive() && !isStopRequested() && LeftDistance.getDistance(DistanceUnit.INCH) >= TargetPosition) {
+
+                correction = diagonal.performPID(getAngle() - angle);
+
+                RightForward.setPower(Power + correction);
+                LeftBack.setPower(Power - correction);
+            }
+
+            LeftForward.setPower(0);
+            RightForward.setPower(0);
+            LeftBack.setPower(0);
+            RightBack.setPower(0);
+        } else if (Direction == FORWARDWITHFRONT) {
+            LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+            double angle = getAngle();
+
+            while (opModeIsActive() && !isStopRequested() && FrontDistance.getDistance(DistanceUnit.INCH) >= TargetPosition) {
+
+                correction = backDrive.performPID(getAngle() - angle);
+
+                LeftForward.setPower(Power - correction);
+                LeftBack.setPower(Power - correction);
+                RightForward.setPower(Power + correction);
+                RightBack.setPower(Power + correction);
+
+            }
+
+            LeftForward.setPower(0);
+            RightForward.setPower(0);
+            LeftBack.setPower(0);
+            RightBack.setPower(0);
+        }
+
         LeftForward.setPower(0);
         RightForward.setPower(0);
         LeftBack.setPower(0);
@@ -571,31 +729,12 @@ public class ThreePowerShot extends LinearOpMode {
         for (int i = 0; i<3; i++) {
 
 
-            Conveyor.setTargetPosition(-65);
-
-
-            Conveyor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            Intake.setPower(0.4);
-            Conveyor.setPower(0.9);
-
-            while (opModeIsActive() && !isStopRequested() && Math.abs(Conveyor.getCurrentPosition()) <= Math.abs(Conveyor.getTargetPosition())) {
-                telemetry.addData("Bringing", "Rings Down");
-                telemetry.addData("Conveyer Target Position", Conveyor.getTargetPosition());
-                telemetry.addData("Conveyor Current Position", Conveyor.getCurrentPosition());
-                telemetry.update();
-            }
-
-            Intake.setPower(0);
-            Conveyor.setPower(0);
-
-
             if (i == 0)
-                Shooter.setPower(-0.5);
+                Shooter.setPower(-0.53);
             else if (i == 1)
-                Shooter.setPower(-0.5);
+                Shooter.setPower(-0.51);
             else
-                Shooter.setPower(-0.49);
+                Shooter.setPower(-0.52);
 
             sleep(1300);
 
@@ -604,7 +743,7 @@ public class ThreePowerShot extends LinearOpMode {
             if(i==0)
                 Conveyor.setTargetPosition(250);
             else if (i == 1)
-                Conveyor.setTargetPosition(375);
+                Conveyor.setTargetPosition(300);
             else if (i == 2)
                 Conveyor.setTargetPosition(1000);
 
@@ -625,9 +764,14 @@ public class ThreePowerShot extends LinearOpMode {
             sleep(400);
 
             if(i == 0){
-                imuTurn(LTURN, 0.4, 18);
+                LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+                imuTurn(LTURN, 0.2, 5);
+
             } else if(i == 1){
-                imuTurn(LTURN, 0.4, 25);
+                LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+                imuTurn(LTURN, 0.2, 10);
             }
             sleep(400);
 
@@ -643,7 +787,7 @@ public class ThreePowerShot extends LinearOpMode {
         Wobbler.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
 
-        Wobbler.setTargetPosition(-4000);
+        Wobbler.setTargetPosition(-2000);
 
         Wobbler.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
@@ -662,7 +806,7 @@ public class ThreePowerShot extends LinearOpMode {
         Wobbler.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
 
-        Wobbler.setTargetPosition(4000);
+        Wobbler.setTargetPosition(2000);
 
         Wobbler.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
@@ -705,7 +849,7 @@ public class ThreePowerShot extends LinearOpMode {
         static final int REGION_HEIGHT = 70;
 
         final int FOUR_RING_THRESHOLD = 140;
-        final int ONE_RING_THRESHOLD = 130;
+        final int ONE_RING_THRESHOLD = 134;
 
         Point region1_pointA = new Point(
                 REGION1_TOPLEFT_ANCHOR_POINT.x,
