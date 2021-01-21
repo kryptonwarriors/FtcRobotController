@@ -198,6 +198,8 @@ public class BuildersTeleOp_AS extends LinearOpMode {
                 }
 
                 telemetry.addData("Conveyor + Intake", Conveyor.getPower());
+                telemetry.addData("Conveyor Encoders", Conveyor.getCurrentPosition());
+                telemetry.addData("Shooter Encoders", Shooter.getCurrentPosition());
                 telemetry.addData("Shooter", Shooter.getPower());
 
 
