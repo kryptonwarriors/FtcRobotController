@@ -209,7 +209,7 @@ public class ThreePowerShot extends LinearOpMode {
             strafe.setInputRange(-90, 90);
             strafe.enable();
 
-            drive = new PIDController(0.016367, 0.00016367*5, 0);
+            drive = new PIDController(0.016367, 0.00016367*5, 0.00016367);
             drive.setSetpoint(0);
             drive.setOutputRange(0, 0.75);
             drive.setInputRange(-90, 90);
@@ -331,13 +331,13 @@ public class ThreePowerShot extends LinearOpMode {
 
                 sleep(100);
 
-                moveEncoders(RIGHT, 0.7, 21);
+                moveEncoders(RIGHT, 0.7, 18);
                 sleep(50);
-                moveEncoders(FORWARDWITHBACK, 0.4, 48);
-                sleep(100);
+                moveEncoders(FORWARDWITHBACK, 0.25, 56);
+                sleep(600);
                 closeWobbleClamper();
                 sleep(500);
-                liftWobbleGoal(1500);
+                liftWobbleGoal(1400);
                 moveEncoders(LEFT, 0.7, 1800);
                 moveEncoders(FORWARD, 0.7, 100);
                 dropWobbleGoal();
@@ -417,7 +417,7 @@ public class ThreePowerShot extends LinearOpMode {
 
             Wobbler.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             LeftBack.setTargetPosition(TargetPosition);
-            Wobbler.setTargetPosition(-16367/2 + 900);
+            Wobbler.setTargetPosition(-16367/2 + 1750);
             LeftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             Wobbler.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
@@ -796,18 +796,18 @@ public class ThreePowerShot extends LinearOpMode {
             if (i == 0)
                 Shooter.setPower(-0.53);
             else if (i == 1)
-                Shooter.setPower(-0.51);
+                Shooter.setPower(-0.52);
             else
-                Shooter.setPower(-0.51);
+                Shooter.setPower(-0.515);
 
             sleep(1300);
 
             Conveyor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
             if(i==0)
-                Conveyor.setTargetPosition(240);
+                Conveyor.setTargetPosition(180);
             else if (i == 1)
-                Conveyor.setTargetPosition(370);
+                Conveyor.setTargetPosition(800);
             else if (i == 2)
                 Conveyor.setTargetPosition(1000);
 
@@ -830,12 +830,12 @@ public class ThreePowerShot extends LinearOpMode {
             if(i == 0){
                 LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-                imuTurn(LTURN, 0.2, 5);
+                imuTurn(LTURN, 0.2, 9);
 
             } else if(i == 1){
                 LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-                imuTurn(LTURN, 0.2, 10);
+                imuTurn(LTURN, 0.2, 14);
             }
             sleep(400);
 
