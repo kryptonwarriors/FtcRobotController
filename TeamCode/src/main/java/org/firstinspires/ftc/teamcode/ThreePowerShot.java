@@ -228,7 +228,10 @@ public class ThreePowerShot extends LinearOpMode {
             diagonal.setInputRange(-90, 90);
             diagonal.enable();
 
+            moveEncoders(FORWARDWITHFRONT, 0.25, 31);
 
+
+/*
             moveEncoders(Forward, 0.6, 1190);
 
             sleep(400);
@@ -331,7 +334,7 @@ public class ThreePowerShot extends LinearOpMode {
 
                 sleep(100);
 
-                moveEncoders(RIGHT, 0.64, 20);
+                moveEncoders(RIGHT, 0.64, 18);
                 sleep(50);
                 moveEncoders(FORWARDWITHFRONT, 0.25, 31);
                 sleep(600);
@@ -349,7 +352,7 @@ public class ThreePowerShot extends LinearOpMode {
             }
 
             liftWobbleGoal(16367/2 - 1100);
-
+*/
         }
 
     }
@@ -799,7 +802,7 @@ public class ThreePowerShot extends LinearOpMode {
 
 
             if (i == 0)
-                Shooter.setPower(-0.53);
+                Shooter.setPower(-0.52);
             else if (i == 1)
                 Shooter.setPower(-0.525);
             else
