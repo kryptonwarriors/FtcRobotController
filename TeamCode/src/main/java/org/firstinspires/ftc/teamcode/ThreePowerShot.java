@@ -173,7 +173,7 @@ public class ThreePowerShot extends LinearOpMode {
 
             } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.A){
 
-                encodersToDrop = 580;
+                encodersToDrop = 500;
                 angleToDrop = -77;
                 diagonalDistance = 15;
                 secondWobbleGoalDistance = 52;
@@ -209,7 +209,7 @@ public class ThreePowerShot extends LinearOpMode {
             strafe.setInputRange(-90, 90);
             strafe.enable();
 
-            drive = new PIDController(0.016367, 0.00016367*5, 0.00016367);
+            drive = new PIDController(0.016367*1.5, 0.00016367*5, 0.00016367*3);
             drive.setSetpoint(0);
             drive.setOutputRange(0, 0.75);
             drive.setInputRange(-90, 90);
@@ -231,11 +231,11 @@ public class ThreePowerShot extends LinearOpMode {
 
             moveEncoders(Forward, 0.6, 1190);
 
-            sleep(200);
+            sleep(400);
 
             LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-            imuTurn(RTURN, 0.2, 4);
+            imuTurn(RTURN, 0.2, 3);
 
             sleep(200);
 
@@ -322,7 +322,7 @@ public class ThreePowerShot extends LinearOpMode {
                 RightForward.setPower(-0.4);
                 RightBack.setPower(-0.4);
 
-                sleep(1100);
+                sleep(900);
 
                 LeftBack.setPower(0);
                 LeftForward.setPower(0);
@@ -331,20 +331,24 @@ public class ThreePowerShot extends LinearOpMode {
 
                 sleep(100);
 
-                moveEncoders(RIGHT, 0.7, 18);
+                moveEncoders(RIGHT, 0.64, 20);
                 sleep(50);
-                moveEncoders(FORWARDWITHBACK, 0.25, 56);
+                moveEncoders(FORWARDWITHFRONT, 0.25, 31);
                 sleep(600);
                 closeWobbleClamper();
                 sleep(500);
                 liftWobbleGoal(1400);
-                moveEncoders(LEFT, 0.7, 1800);
-                moveEncoders(FORWARD, 0.7, 100);
+                moveEncoders(LEFT, 0.7, 1930);
+                sleep(50);
+
+                LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+                moveEncoders(TURNED_FORWARD, 0.7, 50);
                 dropWobbleGoal();
 
             }
 
-            liftWobbleGoal(16367/2 - 1500);
+            liftWobbleGoal(16367/2 - 1100);
 
         }
 
@@ -417,7 +421,7 @@ public class ThreePowerShot extends LinearOpMode {
 
             Wobbler.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             LeftBack.setTargetPosition(TargetPosition);
-            Wobbler.setTargetPosition(-16367/2 + 1750);
+            Wobbler.setTargetPosition(-16367/2 + 1630);
             LeftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             Wobbler.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
@@ -651,6 +655,7 @@ public class ThreePowerShot extends LinearOpMode {
 
             double angle = getAngle();
 
+
             while (opModeIsActive() && !isStopRequested() && FrontDistance.getDistance(DistanceUnit.INCH) >= TargetPosition) {
 
                 correction = backDrive.performPID(getAngle() - angle);
@@ -796,9 +801,9 @@ public class ThreePowerShot extends LinearOpMode {
             if (i == 0)
                 Shooter.setPower(-0.53);
             else if (i == 1)
-                Shooter.setPower(-0.52);
+                Shooter.setPower(-0.525);
             else
-                Shooter.setPower(-0.515);
+                Shooter.setPower(-0.505);
 
             sleep(1300);
 
@@ -807,7 +812,7 @@ public class ThreePowerShot extends LinearOpMode {
             if(i==0)
                 Conveyor.setTargetPosition(180);
             else if (i == 1)
-                Conveyor.setTargetPosition(800);
+                Conveyor.setTargetPosition(850);
             else if (i == 2)
                 Conveyor.setTargetPosition(1000);
 
@@ -830,12 +835,12 @@ public class ThreePowerShot extends LinearOpMode {
             if(i == 0){
                 LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-                imuTurn(LTURN, 0.2, 9);
+                imuTurn(LTURN, 0.2, 5.5);
 
             } else if(i == 1){
                 LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-                imuTurn(LTURN, 0.2, 14);
+                imuTurn(LTURN, 0.2, 12.5);
             }
             sleep(400);
 

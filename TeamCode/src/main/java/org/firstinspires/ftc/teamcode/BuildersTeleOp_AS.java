@@ -170,7 +170,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
                 if (gamepad2.right_stick_y > 0.01 || gamepad2.right_stick_y < -0.01) {
                     //Intake.setPower(0.8 * Scale(gamepad2.right_stick_y));
                     Intake.setPower(1 * Scale(gamepad2.right_stick_y));
-                    Conveyor.setPower(-0.7 * Scale(gamepad2.right_stick_y));
+                    Conveyor.setPower(-0.9 * Scale(gamepad2.right_stick_y));
                 } else if (gamepad2.x) {
                     Conveyor.setPower(0.4);
                 } else {
