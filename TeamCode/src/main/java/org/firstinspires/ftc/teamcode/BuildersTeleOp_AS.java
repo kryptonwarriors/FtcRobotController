@@ -59,7 +59,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
         Wobbler = hardwareMap.dcMotor.get("Wobbler");
 
         RightDistance = hardwareMap.get(DistanceSensor.class, "RightDistance");
-        BackDistance = hardwareMap.get(DistanceSensor.class, "BackDistance");
+        //BackDistance = hardwareMap.get(DistanceSensor.class, "BackDistance");
         FrontDistance = hardwareMap.get(DistanceSensor.class, "FrontDistance");
         LeftDistance = hardwareMap.get(DistanceSensor.class, "LeftDistance");
 
@@ -185,7 +185,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
                 }
 
                 if (gamepad2.dpad_up) {
-                    Shooter.setPower(-1);
+                    Shooter.setPower(-0.96);
                 } else if (gamepad2.dpad_left) {
                     Shooter.setPower(-0.5);
                 } else {
@@ -218,7 +218,8 @@ public class BuildersTeleOp_AS extends LinearOpMode {
 
                 telemetry.addData("LeftDistance", LeftDistance.getDistance(DistanceUnit.INCH));
                 telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
-                telemetry.addData("BackDistance", BackDistance.getDistance(DistanceUnit.INCH));
+                //telemetry.addData("BackDistance", BackDistance.getDistance(DistanceUnit.INCH));
+                telemetry.addData("FrontDistace", FrontDistance.getDistance(DistanceUnit.INCH));
                 telemetry.addData("Status", "Run Time: " + runtime.toString());
                 telemetry.addData("RightForward", RightForward.getPower());
                 telemetry.addData("LeftForward", LeftForward.getPower());
