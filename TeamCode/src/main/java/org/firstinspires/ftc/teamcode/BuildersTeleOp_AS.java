@@ -4,12 +4,15 @@ package org.firstinspires.ftc.teamcode;
 // import Da One And Only Muthu
 //import com.qualcomm.robotcore.brain.Moni;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -42,6 +45,11 @@ public class BuildersTeleOp_AS extends LinearOpMode {
     int i = 1;
     static double conveyorPower;
 
+    public static double ringDistance;
+
+    public RevBlinkinLedDriver blinkblinkboy;
+    public ColorSensor color;
+
     public BNO055IMU imu;
     public Orientation lastAngles = new Orientation();
     double globalAngle, correction, rotation;
@@ -65,6 +73,9 @@ public class BuildersTeleOp_AS extends LinearOpMode {
         LeftForward = hardwareMap.dcMotor.get("LeftForward");
         LeftBack = hardwareMap.dcMotor.get("LeftBack");
 
+        blinkblinkboy = hardwareMap.get(RevBlinkinLedDriver.class, "blinkblinkboy");
+
+        color = hardwareMap.get(ColorSensor.class, "color");
 
         Intake = hardwareMap.dcMotor.get("Intake");
         Conveyor = hardwareMap.dcMotor.get("Conveyor");
@@ -73,7 +84,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
         Wobbler = hardwareMap.dcMotor.get("Wobbler");
 
         RightDistance = hardwareMap.get(DistanceSensor.class, "RightDistance");
-        //BackDistance = hardwareMap.get(DistanceSensor.class, "BackDistance");
+        BackDistance = hardwareMap.get(DistanceSensor.class, "BackDistance");
         FrontDistance = hardwareMap.get(DistanceSensor.class, "FrontDistance");
         LeftDistance = hardwareMap.get(DistanceSensor.class, "LeftDistance");
 
@@ -125,6 +136,9 @@ public class BuildersTeleOp_AS extends LinearOpMode {
         waitForStart();
         if (opModeIsActive()) {
             while (opModeIsActive()) {
+
+                ringDistance =  ((DistanceSensor)color).getDistance(DistanceUnit.CM);
+
                 if (gamepad1.right_trigger > 0.01) {
                     // Strafing to the Right
                     LeftForward.setPower(-Multiplier * Scale(gamepad1.right_trigger));
@@ -191,6 +205,8 @@ public class BuildersTeleOp_AS extends LinearOpMode {
                 if (gamepad2.right_stick_y > 0.01 || gamepad2.right_stick_y < -0.01) {
                     //Intake.setPower(0.8 * Scale(gamepad2.right_stick_y));
                     Intake.setPower(1 * Scale(gamepad2.right_stick_y));
+
+                    Conveyor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                     Conveyor.setPower(-0.9 * Scale(gamepad2.right_stick_y));
                 } else if (gamepad2.x) {
                     Conveyor.setPower(0.6);
@@ -276,6 +292,16 @@ public class BuildersTeleOp_AS extends LinearOpMode {
       }
 */
 
+                if (ringDistance < 2){
+                    blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.WHITE);
+                    telemetry.addLine("ringpresent");
+                    telemetry.update();
+                } else {
+                    blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.ORANGE);
+                    telemetry.addLine("no ring");
+                    telemetry.update();
+                }
+
 
                 telemetry.addData("LeftDistance", LeftDistance.getDistance(DistanceUnit.INCH));
                 telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
@@ -287,6 +313,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
                 telemetry.addData("RightBack", RightBack.getPower());
                 telemetry.addData("LeftBack", LeftBack.getPower());
                 telemetry.addData("Voltage", voltageSensor.getVoltage());
+                telemetry.addData("ringDistance", ((DistanceSensor)color).getDistance(DistanceUnit.CM));
                 telemetry.update();
             }
         }

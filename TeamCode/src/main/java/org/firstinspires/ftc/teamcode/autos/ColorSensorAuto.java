@@ -43,16 +43,24 @@ public class ColorSensorAuto extends LinearOpMode {
     NormalizedColorSensor colorSensor;
     RevBlinkinLedDriver.BlinkinPattern lights;
     public DcMotor LeftForward, LeftBack, RightForward, RightBack;
+    public RevBlinkinLedDriver blinkblinkboy;
 
     @Override
     public void runOpMode() {
 
-        colorSensor = (NormalizedColorSensor)hardwareMap.colorSensor.get("color");
+       // colorSensor = (NormalizedColorSensor)hardwareMap.colorSensor.get("color");
+        blinkblinkboy = hardwareMap.get(RevBlinkinLedDriver.class, "blinkblinkboy");
+
+        blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.ORANGE);
+
+        waitForStart();
 
         while(opModeIsActive() && !isStopRequested()) {
 
-            NormalizedRGBA colors = colorSensor.getNormalizedColors();
+           // NormalizedRGBA colors = colorSensor.getNormalizedColors();
 
+
+/*
             if (colors.red == 255 && colors.green == 255 && colors.blue == 255  && colors.alpha == 0.0) {
 
                 LeftForward.setPower(0);
@@ -68,7 +76,7 @@ public class ColorSensorAuto extends LinearOpMode {
             telemetry.addData( "alpha:", colors.alpha);
             telemetry.update();
 
-
+*/
 
         }
     }
