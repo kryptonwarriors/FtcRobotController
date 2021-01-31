@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 // import GOAT || AMAN
 // import Da One And Only Muthu
 //import com.qualcomm.robotcore.brain.Moni;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -10,10 +11,15 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 @TeleOp(name = "BuildersTeleOp_AS", group = "")
 public class BuildersTeleOp_AS extends LinearOpMode {
@@ -32,7 +38,15 @@ public class BuildersTeleOp_AS extends LinearOpMode {
     int RTURN = 5;
     int FORWARDWITHFRONT = 6;
     int Forward = 7;
+    int RIGHTWITHLEFT = 8;
+    int i = 1;
     static double conveyorPower;
+
+    public BNO055IMU imu;
+    public Orientation lastAngles = new Orientation();
+    double globalAngle, correction, rotation;
+
+    private VoltageSensor voltageSensor;
 
     //Align Variables
     public double inchesToVerticalAlignment = 45;
@@ -63,6 +77,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
         FrontDistance = hardwareMap.get(DistanceSensor.class, "FrontDistance");
         LeftDistance = hardwareMap.get(DistanceSensor.class, "LeftDistance");
 
+        voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
         WobbleClamper = hardwareMap.servo.get("WobbleClamper");
     /*
@@ -70,6 +85,13 @@ public class BuildersTeleOp_AS extends LinearOpMode {
     RingClamper = hardwareMap.servo.get("RingClamper");
     
     */
+
+        imu = hardwareMap.get( BNO055IMU.class, "imu");
+        BNO055IMU.Parameters imuParameters = new BNO055IMU.Parameters();
+        imuParameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        imuParameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        imuParameters.loggingEnabled = false;
+        imu.initialize(imuParameters);
 
         RightBack.setDirection(DcMotor.Direction.REVERSE);
         LeftForward.setDirection(DcMotor.Direction.REVERSE);
@@ -84,6 +106,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
         Intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         Shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         Shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        Conveyor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         Wobbler.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         WobbleClamper.setPosition(0.5);
@@ -145,10 +168,8 @@ public class BuildersTeleOp_AS extends LinearOpMode {
                     LeftForward.setPower(0.7);
                     LeftBack.setPower(-0.7);
                 } else if (gamepad1.left_bumper) {
-                    RightBack.setPower(-0.7);
-                    RightForward.setPower(0.7);
-                    LeftForward.setPower(-0.7);
-                    LeftBack.setPower(0.7);
+                    resetAngle();
+                    imuTurn(RTURN, 0.2, 4);
                 } else if (gamepad1.y) {
                     //align(0.7);
                 } else if (gamepad1.dpad_left) {
@@ -172,21 +193,61 @@ public class BuildersTeleOp_AS extends LinearOpMode {
                     Intake.setPower(1 * Scale(gamepad2.right_stick_y));
                     Conveyor.setPower(-0.9 * Scale(gamepad2.right_stick_y));
                 } else if (gamepad2.x) {
-                    Conveyor.setPower(0.6 );
+                    Conveyor.setPower(0.6);
                 } else {
                     Intake.setPower(0);
                     Conveyor.setPower(0);
                 }
 
+                if (gamepad2.a) {
+                    Conveyor.setPower(-0.4);
+                } /*else if (gamepad2.b) {
+
+                    if (voltageSensor.getVoltage() > 13.1) {
+                        Shooter.setPower(-0.92);
+                    } else {
+                        Shooter.setPower(-0.96);
+                    }
+
+                    sleep(1300);
+
+                    Conveyor.setPower(-0.6);
+                    Intake.setPower( 0.5);
+
+                    sleep(3000);
+
+                    Shooter.setPower(0);
+                    Conveyor.setPower(0);
+                    Intake.setPower(0);
+
+                }*/
+/*
+                if (gamepad1.right_bumper && i == 1) {
+                    //Strafe Right to Left Power Shot
+                    moveDistance(RIGHTWITHLEFT, 0.5, 17.25);
+                    i = i++;
+                } else if (gamepad1.right_bumper && i == 2) {
+                    moveDistance(RIGHTWITHLEFT, 0.5, 25);
+                    i = i++;
+                } else if (gamepad1.right_bumper && i == 3) {
+                    moveDistance(RIGHTWITHLEFT, 0.5, 32.75);
+                    i = 1;
+                }
+
+ */
                 if (gamepad2.left_stick_y > 0.01 || gamepad2.left_stick_y < -0.01) {
                     Wobbler.setPower(-gamepad2.left_stick_y);
                 } else {
                     Wobbler.setPower(0);
                 }
 
+                if (gamepad1.left_bumper) {
+
+                }
+
                 if (gamepad2.dpad_up) {
                     Shooter.setPower(-0.96);
-                } else if (gamepad2.dpad_left) {
+                } else if (gamepad2.dpad_down) {
                     Shooter.setPower(-0.5);
                 } else {
                     Shooter.setPower(0);
@@ -225,6 +286,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
                 telemetry.addData("LeftForward", LeftForward.getPower());
                 telemetry.addData("RightBack", RightBack.getPower());
                 telemetry.addData("LeftBack", LeftBack.getPower());
+                telemetry.addData("Voltage", voltageSensor.getVoltage());
                 telemetry.update();
             }
         }
@@ -271,6 +333,22 @@ public class BuildersTeleOp_AS extends LinearOpMode {
             }
         } else if (Direction == RIGHT) {
             while (opModeIsActive() && RightDistance.getDistance(DistanceUnit.INCH) > distance) {
+
+
+                LeftForward.setPower(Power);
+                LeftBack.setPower(-Power);
+                RightForward.setPower(-Power);
+                RightBack.setPower(Power);
+
+                telemetry.addData("LeftForward", LeftForward.getPower());
+                telemetry.addData("RightForward", RightForward.getPower());
+                telemetry.addData("LeftBack", LeftBack.getPower());
+                telemetry.addData("RightBack", RightBack.getPower());
+                telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
+                telemetry.update();
+            }
+        } else if (Direction == RIGHTWITHLEFT) {
+            while (opModeIsActive() && LeftDistance.getDistance(DistanceUnit.INCH) < distance) {
 
 
                 LeftForward.setPower(Power);
@@ -339,6 +417,71 @@ public class BuildersTeleOp_AS extends LinearOpMode {
         RightForward.setPower(0);
         LeftBack.setPower(0);
         RightBack.setPower(0);
+    }
+
+    private double getAngle()
+    {
+
+        Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+
+        double deltaAngle = angles.firstAngle - lastAngles.firstAngle;
+
+        if (deltaAngle < -90)
+            deltaAngle += 360;
+        else if (deltaAngle > 90)
+            deltaAngle -= 360;
+
+        globalAngle += deltaAngle;
+
+        lastAngles = angles;
+
+        return globalAngle;
+    }
+
+    public void resetAngle()
+    {
+        lastAngles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+
+        globalAngle = 0;
+
+    }
+    public void imuTurn(int direction, double power, double angle) {
+
+        if (direction == LTURN){
+            LeftForward.setPower(-power);
+            LeftBack.setPower(-power);
+            RightForward.setPower(power);
+            RightBack.setPower(power);
+
+            while (opModeIsActive() && getAngle() <= angle){
+                telemetry.addData("currentAngle", getAngle());
+                telemetry.addData("currentEncoderPosition", LeftForward.getCurrentPosition());
+                telemetry.addLine("Turning :)");
+                telemetry.update();
+            }
+
+            LeftForward.setPower(0);
+            LeftBack.setPower(0);
+            RightForward.setPower(0);
+            RightBack.setPower(0);
+        } else if (direction == RTURN){
+            LeftForward.setPower(power);
+            LeftBack.setPower(power);
+            RightForward.setPower(-power);
+            RightBack.setPower(-power);
+
+            while (opModeIsActive() && getAngle() <= angle){
+                telemetry.addData("currentAngle", getAngle());
+                telemetry.addData("currentEncoderPosition", LeftForward.getCurrentPosition());
+                telemetry.addLine("Turning :)");
+                telemetry.update();
+            }
+
+            LeftForward.setPower(0);
+            LeftBack.setPower(0);
+            RightForward.setPower(0);
+            RightBack.setPower(0);
+        }
     }
 }
 

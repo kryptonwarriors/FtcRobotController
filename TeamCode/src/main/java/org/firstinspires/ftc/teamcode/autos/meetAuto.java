@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.autos;
 
 // import Rahul's Genius & IQ
 // import GOAT || AMAN

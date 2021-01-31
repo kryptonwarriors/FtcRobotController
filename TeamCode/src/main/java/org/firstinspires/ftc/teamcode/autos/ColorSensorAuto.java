@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.autos;
 
 /* Copyright (c) 2017-2020 FIRST. All rights reserved.
  *
@@ -30,6 +30,7 @@ package org.firstinspires.ftc.teamcode;
  */
 
 
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
@@ -40,6 +41,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 public class ColorSensorAuto extends LinearOpMode {
 
     NormalizedColorSensor colorSensor;
+    RevBlinkinLedDriver.BlinkinPattern lights;
     public DcMotor LeftForward, LeftBack, RightForward, RightBack;
 
     @Override
