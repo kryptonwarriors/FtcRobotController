@@ -23,6 +23,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.util.PIDController;
 
 @TeleOp(name = "BuildersTeleOp_AS", group = "")
 public class BuildersTeleOp_AS extends LinearOpMode {
@@ -53,6 +54,8 @@ public class BuildersTeleOp_AS extends LinearOpMode {
     public BNO055IMU imu;
     public Orientation lastAngles = new Orientation();
     double globalAngle, correction, rotation;
+    PIDController strafe;
+
 
     private VoltageSensor voltageSensor;
 
@@ -135,6 +138,14 @@ public class BuildersTeleOp_AS extends LinearOpMode {
         telemetry.update();
         waitForStart();
         if (opModeIsActive()) {
+
+            strafe = new PIDController(0.016367*1.57, 0.00016367*1.5, 0);
+            strafe.setSetpoint(0);
+            strafe.setOutputRange(0, 0.75);
+            strafe.setInputRange(-90, 90);
+            strafe.enable();
+
+
             while (opModeIsActive()) {
 
                 ringDistance =  ((DistanceSensor)color).getDistance(DistanceUnit.CM);
@@ -177,14 +188,22 @@ public class BuildersTeleOp_AS extends LinearOpMode {
         RightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         RightBack.setPower(0.75);*/
                 } else if (gamepad1.right_bumper) {
-                    RightBack.setPower(0.7);
-                    RightForward.setPower(-0.7);
-                    LeftForward.setPower(0.7);
-                    LeftBack.setPower(-0.7);
-                } else if (gamepad1.left_bumper) {
+
                     resetAngle();
-                    imuTurn(RTURN, 0.2, 4);
-                } else if (gamepad1.y) {
+                    imuTurn(LTURN, 0.3, -7);
+
+                } else if (gamepad1.left_bumper) {
+
+                    if (LeftDistance.getDistance(DistanceUnit.INCH) > 28) {
+                        moveDistance(LEFT, 0.5, 28);
+                    } else {
+                        moveDistance(RIGHT, 0.5, 28);
+                    }
+
+                   // powershot();
+
+                }
+                else if (gamepad1.y) {
                     //align(0.7);
                 } else if (gamepad1.dpad_left) {
                     RightForward.setPower(-0.7);
@@ -359,21 +378,36 @@ public class BuildersTeleOp_AS extends LinearOpMode {
                 telemetry.update();
             }
         } else if (Direction == RIGHT) {
-            while (opModeIsActive() && RightDistance.getDistance(DistanceUnit.INCH) > distance) {
+            LeftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+            double angle = getAngle();
 
 
-                LeftForward.setPower(Power);
-                LeftBack.setPower(-Power);
-                RightForward.setPower(-Power);
-                RightBack.setPower(Power);
+            while (opModeIsActive() && LeftDistance.getDistance(DistanceUnit.INCH) > distance) {
 
-                telemetry.addData("LeftForward", LeftForward.getPower());
-                telemetry.addData("RightForward", RightForward.getPower());
-                telemetry.addData("LeftBack", LeftBack.getPower());
-                telemetry.addData("RightBack", RightBack.getPower());
-                telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
+                correction = strafe.performPID(getAngle() - angle);
+
+                LeftForward.setPower(Power - correction);
+                LeftBack.setPower(-Power - correction);
+                RightForward.setPower(-Power + correction);
+                RightBack.setPower(Power + correction);
+
+                telemetry.addLine("going");
+                telemetry.addData("correction", correction);
+                telemetry.addData("leftback position", LeftBack.getCurrentPosition());
+                telemetry.addData("rightdistance", RightDistance.getDistance(DistanceUnit.INCH));
                 telemetry.update();
+
             }
+
+            LeftForward.setPower(0);
+            RightForward.setPower(0);
+            LeftBack.setPower(0);
+            RightBack.setPower(0);
+
+
         } else if (Direction == RIGHTWITHLEFT) {
             while (opModeIsActive() && LeftDistance.getDistance(DistanceUnit.INCH) < distance) {
 
@@ -391,22 +425,34 @@ public class BuildersTeleOp_AS extends LinearOpMode {
                 telemetry.update();
             }
         } else if (Direction == LEFT) {
-            while (opModeIsActive() && RightDistance.getDistance(DistanceUnit.INCH) < distance) {
+            LeftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+            double angle = getAngle();
 
 
-                LeftForward.setPower(-Power);
-                LeftBack.setPower(Power);
-                RightForward.setPower(Power);
-                RightBack.setPower(-Power);
+            while (opModeIsActive() && LeftDistance.getDistance(DistanceUnit.INCH) < distance) {
 
-                telemetry.addData("LeftForward", LeftForward.getPower());
-                telemetry.addData("RightForward", RightForward.getPower());
-                telemetry.addData("LeftBack", LeftBack.getPower());
-                telemetry.addData("RightBack", RightBack.getPower());
-                telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
+                correction = strafe.performPID(getAngle() - angle);
+
+                LeftForward.setPower(-Power - correction);
+                LeftBack.setPower(Power - correction);
+                RightForward.setPower(Power + correction);
+                RightBack.setPower(-Power + correction);
+
+                telemetry.addLine("going");
+                telemetry.addData("correction", correction);
+                telemetry.addData("leftback position", LeftBack.getCurrentPosition());
+                telemetry.addData("rightdistance", RightDistance.getDistance(DistanceUnit.INCH));
                 telemetry.update();
+
             }
         }
+        LeftForward.setPower(0);
+        RightForward.setPower(0);
+        LeftBack.setPower(0);
+        RightBack.setPower(0);
 
         LeftForward.setPower(0);
         LeftBack.setPower(0);
@@ -480,7 +526,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
             RightForward.setPower(power);
             RightBack.setPower(power);
 
-            while (opModeIsActive() && getAngle() <= angle){
+            while (opModeIsActive() && getAngle() >= angle){
                 telemetry.addData("currentAngle", getAngle());
                 telemetry.addData("currentEncoderPosition", LeftForward.getCurrentPosition());
                 telemetry.addLine("Turning :)");
@@ -497,7 +543,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
             RightForward.setPower(-power);
             RightBack.setPower(-power);
 
-            while (opModeIsActive() && getAngle() <= angle){
+            while (opModeIsActive() && getAngle() >= angle){
                 telemetry.addData("currentAngle", getAngle());
                 telemetry.addData("currentEncoderPosition", LeftForward.getCurrentPosition());
                 telemetry.addLine("Turning :)");
@@ -510,6 +556,70 @@ public class BuildersTeleOp_AS extends LinearOpMode {
             RightBack.setPower(0);
         }
     }
+
+    public void powershot(){
+
+        Conveyor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        Shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        Conveyor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        for (int i = 0; i<3; i++) {
+
+
+            if (i == 0)
+                Shooter.setPower(-0.515);
+            else if (i == 1)
+                Shooter.setPower(-0.52);
+            else
+                Shooter.setPower(-0.505);
+
+            sleep(1300);
+
+            Conveyor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            if(i==0)
+                Conveyor.setTargetPosition(180);
+            else if (i == 1)
+                Conveyor.setTargetPosition(650);
+            else if (i == 2)
+                Conveyor.setTargetPosition(1000);
+
+
+            Conveyor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            Intake.setPower(-0.8);
+            Conveyor.setPower(0.9);
+
+            while (opModeIsActive() && !isStopRequested() && Math.abs(Conveyor.getCurrentPosition()) <= Math.abs(Conveyor.getTargetPosition())) {
+
+            }
+
+            Intake.setPower(0);
+            Conveyor.setPower(0);
+            Shooter.setPower(0);
+
+            sleep(400);
+
+            if(i == 0){
+                LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                resetAngle();
+                imuTurn(LTURN, 0.3, -6.4);
+
+            } else if(i == 1){
+                LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                resetAngle();
+                imuTurn(LTURN, 0.3, -6.4);
+            }
+            sleep(400);
+
+        }
+
+
+        Shooter.setPower(0);
+
+    }
+
+
 }
 
 
