@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.Odometry;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+@Disabled
 
 @TeleOp(name = "Global Coordinate Position Test", group = "Calibration")
 public class GlobalCoordinatePositionUpdateSample extends LinearOpMode {

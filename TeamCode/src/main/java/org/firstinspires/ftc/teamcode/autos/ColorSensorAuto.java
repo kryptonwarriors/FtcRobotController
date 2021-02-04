@@ -37,7 +37,7 @@ import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-@Autonomous(name = "ColorSensorAuto", group = "")
+@Autonomous(name = "ColorSensorAuto", group = "test")
 public class ColorSensorAuto extends LinearOpMode {
 
     NormalizedColorSensor colorSensor;

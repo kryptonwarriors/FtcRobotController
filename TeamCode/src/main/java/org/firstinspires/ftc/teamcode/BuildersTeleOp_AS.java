@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode;
 // import GOAT || AMAN
 // import Da One And Only Muthu
 //import com.qualcomm.robotcore.brain.Moni;
+import android.text.method.Touch;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -14,6 +16,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -50,6 +53,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
 
     public RevBlinkinLedDriver blinkblinkboy;
     public ColorSensor color;
+    public TouchSensor WobbleTouch;
 
     public BNO055IMU imu;
     public Orientation lastAngles = new Orientation();
@@ -75,6 +79,8 @@ public class BuildersTeleOp_AS extends LinearOpMode {
         RightBack = hardwareMap.dcMotor.get("RightBack");
         LeftForward = hardwareMap.dcMotor.get("LeftForward");
         LeftBack = hardwareMap.dcMotor.get("LeftBack");
+
+        WobbleTouch = hardwareMap.get(TouchSensor.class, "WobbleTouch");
 
         blinkblinkboy = hardwareMap.get(RevBlinkinLedDriver.class, "blinkblinkboy");
 
@@ -310,7 +316,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
         Wobbler.setPower(0);
       }
 */
-
+/*
                 if (ringDistance < 2){
                     blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.WHITE);
                     telemetry.addLine("ringpresent");
@@ -320,8 +326,10 @@ public class BuildersTeleOp_AS extends LinearOpMode {
                     telemetry.addLine("no ring");
                     telemetry.update();
                 }
+*/
 
 
+                telemetry.addData("WobbleTouch", WobbleTouch.getValue());
                 telemetry.addData("LeftDistance", LeftDistance.getDistance(DistanceUnit.INCH));
                 telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
                 //telemetry.addData("BackDistance", BackDistance.getDistance(DistanceUnit.INCH));

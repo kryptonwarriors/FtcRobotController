@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 // import Rahuls's Genius & IQ
 // import GOAT || AMAN
 //import com.qualcomm.robotcore.brain.Moni;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -9,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+@Disabled
 
 @TeleOp(name = "ConnectTheTeleOp", group = "")
 public class ConnectTeleOp extends LinearOpMode {

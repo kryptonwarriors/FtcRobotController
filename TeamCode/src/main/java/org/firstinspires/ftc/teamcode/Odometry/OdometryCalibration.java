@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.Odometry;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -17,6 +18,9 @@ import java.io.File;
  * org.firstinspires.ftc.teamcode.Odometry system calibration. Run this OpMode to generate the necessary constants to calculate the robot's global position on the field.
  * The Global Positioning Algorithm will not function and will throw an error if this program is not run first
  */
+
+@Disabled
+
 @TeleOp(name = "OdometryCalibration", group = "")
 public class OdometryCalibration extends LinearOpMode {
     //Drive motors

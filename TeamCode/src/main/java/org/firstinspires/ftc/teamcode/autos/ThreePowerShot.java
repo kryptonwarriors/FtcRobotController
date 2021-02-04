@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -67,25 +68,20 @@ public class ThreePowerShot extends LinearOpMode {
     PIDController strafe;
     PIDController diagonal;
 
+    public TouchSensor WobbleTouch;
+
     int FORWARD = 0;
     int BACKWARD = 1;
     int LEFT = 2;
     int RIGHT = 3;
     int LTURN = 4;
     int RTURN = 5;
-    int FORWARDWITHFRONT = 6;
     int Forward = 7;
     int UPLEFT = 8;
     int UPRIGHT = 9;
-    int UPRIGHTWITHLEFT = 10;
-    int LEFTWITHLEFT = 11;
-    int TURNED_FORWARD = 12;
-    int TURNED_BACKWARD = 13;
     int FORWARD_WITH_ARM = 14;
     int FORWARDWITHBACK = 15;
     int DISTANCELEFT = 16;
-    int ENCODER_RIGHT = 17;
-    int TURNED_RIGHT = 18;
 
     private VoltageSensor voltageSensor;
     private double initialVoltage;
@@ -128,6 +124,8 @@ public class ThreePowerShot extends LinearOpMode {
         BackDistance = hardwareMap.get(DistanceSensor.class, "BackDistance");
         FrontDistance = hardwareMap.get(DistanceSensor.class, "FrontDistance");
         LeftDistance = hardwareMap.get(DistanceSensor.class, "LeftDistance");
+
+        WobbleTouch = hardwareMap.get(TouchSensor.class, "WobbleTouch");
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
@@ -253,6 +251,17 @@ public class ThreePowerShot extends LinearOpMode {
 
 
 
+            Wobbler.setPower(-1);
+
+            while(!WobbleTouch.isPressed()){
+                telemetry.addLine("going down :)");
+                telemetry.update();
+            }
+
+            Wobbler.setPower(0);
+
+            sleep(10000000);
+
 //GO TO POWERSHOTS
             moveEncoders(Forward, 0.6, 1240, 0, 0);
 
@@ -273,7 +282,7 @@ public class ThreePowerShot extends LinearOpMode {
 
             sleep(50);
 
-            moveEncoders(FORWARD_WITH_ARM, 0.6, encodersToDrop, angleToDrop, 2);
+            moveEncoders(FORWARD_WITH_ARM, 0.6, encodersToDrop, angleToDrop, 6);
 
             openWobbleClamper();
         //C
@@ -313,7 +322,7 @@ public class ThreePowerShot extends LinearOpMode {
 
                 sleep(50);
 
-                moveDistance(FORWARDWITHFRONT, 0.25, 30, -90, 4);
+                moveDistance(FORWARD, 0.25, 30, -90, 6);
 
                 sleep(200);
 
@@ -412,7 +421,7 @@ public class ThreePowerShot extends LinearOpMode {
 
                 sleep(10);
 
-                moveDistance(FORWARDWITHFRONT, 0.25, 32, -90, 5);
+                moveDistance(FORWARD, 0.25, 32, -90, 5);
 
                 sleep(600);
 
@@ -500,7 +509,7 @@ public class ThreePowerShot extends LinearOpMode {
                 }
                 sleep(50);
 
-                moveDistance(FORWARDWITHFRONT, 0.25, 28, -90, 5);
+                moveDistance(FORWARD, 0.25, 28, -90, 5);
 
                 sleep(600);
 
@@ -510,7 +519,7 @@ public class ThreePowerShot extends LinearOpMode {
 
                 liftWobbleGoal(1400);
 
-                moveEncoders(LEFT, 0.7, 1970, 0, 5);
+                moveEncoders(LEFT, 0.7, 1970, -90, 5);
 
                 sleep(50);
 
@@ -772,11 +781,9 @@ public class ThreePowerShot extends LinearOpMode {
             RightBack.setPower(0);
         } else if (Direction == FORWARD_WITH_ARM){
 
-            Wobbler.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            Wobbler.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             LeftBack.setTargetPosition(TargetPosition);
-            Wobbler.setTargetPosition(-16367/2 + 1590);
             LeftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            Wobbler.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             Wobbler.setPower(1);
 
@@ -793,7 +800,7 @@ public class ThreePowerShot extends LinearOpMode {
                 telemetry.addLine("going");
                 telemetry.addData("correction", correction);
                 telemetry.update();
-                if (Math.abs(Wobbler.getCurrentPosition()) >= Math.abs(Wobbler.getTargetPosition()))
+                if (WobbleTouch.isPressed())
                     Wobbler.setPower(0);
             }
 

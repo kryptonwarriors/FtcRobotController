@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.Odometry;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+@Disabled
 
 @TeleOp(name = "My org.firstinspires.ftc.teamcode.Odometry OpMode")
 public class MyOdometryOpMode extends LinearOpMode {

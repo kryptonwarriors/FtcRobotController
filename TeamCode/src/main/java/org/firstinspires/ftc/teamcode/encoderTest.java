@@ -3,7 +3,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-@Autonomous(name = "encoderTest", group = "")
+@Autonomous(name = "encoderTest", group = "test")
 public class encoderTest extends LinearOpMode{
 
     public DcMotor LeftForward, LeftBack, RightForward, RightBack;
