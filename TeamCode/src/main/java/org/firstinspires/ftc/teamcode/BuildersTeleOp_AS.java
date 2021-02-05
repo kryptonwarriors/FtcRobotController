@@ -129,7 +129,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
         Conveyor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         Wobbler.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        WobbleClamper.setPosition(0.5);
+        WobbleClamper.setPosition(0.7);
 
         RightForward.setPower(0);
         RightBack.setPower(0);
@@ -295,7 +295,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
                 }
 
                 if (gamepad2.left_bumper) { //OUT
-                    WobbleClamper.setPosition(0.5);
+                    WobbleClamper.setPosition(0.7);
                 } else if (gamepad2.right_bumper) { //IN
                     WobbleClamper.setPosition(1);
                 }

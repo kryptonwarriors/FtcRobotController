@@ -177,7 +177,6 @@ public class ThreePowerShot extends LinearOpMode {
                 secondWobbleGoalDistance = 45;
                 secondWobbleEncoderDistance = 600;
                 position = 3;
-                movement = UPLEFT;
 
             } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.B) {
 
@@ -187,7 +186,6 @@ public class ThreePowerShot extends LinearOpMode {
                 secondWobbleGoalDistance = 37;
                 secondWobbleEncoderDistance = 400;
                 position = 2;
-                movement = DISTANCELEFT;
                 angleForSecond = -342;
 
             } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.A){
@@ -198,7 +196,6 @@ public class ThreePowerShot extends LinearOpMode {
                 secondWobbleGoalDistance = 52;
                 secondWobbleEncoderDistance = 100;
                 position = 1;
-                movement = DISTANCELEFT;
 
             }
 
@@ -224,7 +221,7 @@ public class ThreePowerShot extends LinearOpMode {
 
         if (opModeIsActive() && !isStopRequested()) {
 
-            strafe = new PIDController(0.016367*1.57, 0.00016367*1.5, 0);
+            strafe = new PIDController(0.0016367, 0.00016367, 0.000016367);
             strafe.setSetpoint(0);
             strafe.setOutputRange(0, 0.75);
             strafe.setInputRange(-90, 90);
@@ -250,24 +247,12 @@ public class ThreePowerShot extends LinearOpMode {
             diagonal.enable();
 
 
-
-            Wobbler.setPower(-1);
-
-            while(!WobbleTouch.isPressed()){
-                telemetry.addLine("going down :)");
-                telemetry.update();
-            }
-
-            Wobbler.setPower(0);
-
-            sleep(10000000);
-
 //GO TO POWERSHOTS
             moveEncoders(Forward, 0.6, 1240, 0, 0);
 
             sleep(400);
 
-            imuTurn(RTURN, 0.2, 3);
+            imuTurn(RTURN, 0.2, 1);
 
             sleep(200);
 
@@ -485,7 +470,7 @@ public class ThreePowerShot extends LinearOpMode {
             }
             else if (position == 1) {
 
-                moveEncoders(BACKWARD, 0.4, 600, -90, 1.1);
+                moveEncoders(BACKWARD, 0.4, 400, -90, 1.1);
 
                 /*
                 LeftBack.setPower(-0.4);
@@ -509,7 +494,7 @@ public class ThreePowerShot extends LinearOpMode {
                 }
                 sleep(50);
 
-                moveDistance(FORWARD, 0.25, 28, -90, 5);
+                moveDistance(FORWARD, 0.3, 29.5, -90, 5);
 
                 sleep(600);
 
@@ -519,7 +504,7 @@ public class ThreePowerShot extends LinearOpMode {
 
                 liftWobbleGoal(1400);
 
-                moveEncoders(LEFT, 0.7, 1970, -90, 5);
+                moveEncoders(LEFT, 0.7, 2170, -90, 5);
 
                 sleep(50);
 
@@ -570,7 +555,7 @@ public class ThreePowerShot extends LinearOpMode {
 
     }
 
-    public void moveDistance(int Direction, double Power, int Distance, int desiredAngle, double failSafeTime) {
+    public void moveDistance(int Direction, double Power, double Distance, int desiredAngle, double failSafeTime) {
 
         LeftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
@@ -641,7 +626,7 @@ public class ThreePowerShot extends LinearOpMode {
 
             double angle = getAngle();
 
-            while (opModeIsActive() && !isStopRequested() && LeftDistance.getDistance(DistanceUnit.INCH) >= Distance && (failSafeTime > 0 && runtime.seconds() < failSafeTime)) {
+            while (opModeIsActive() && !isStopRequested() && LeftDistance.getDistance(DistanceUnit.INCH) >= Distance && (failSafeTime > 0 && time < failSafeTime)) {
 
                 correction = diagonal.performPID(getAngle() - angle);
 
@@ -656,7 +641,7 @@ public class ThreePowerShot extends LinearOpMode {
         } else if (Direction == FORWARD) {
             LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-            while (opModeIsActive() && !isStopRequested() && FrontDistance.getDistance(DistanceUnit.INCH) >= Distance && (failSafeTime > 0 && runtime.seconds() < failSafeTime)) {
+            while (opModeIsActive() && !isStopRequested() && FrontDistance.getDistance(DistanceUnit.INCH) >= Distance && (failSafeTime > 0 && time < failSafeTime)) {
 
                 correction = backDrive.performPID(getAngle() - desiredAngle);
 
@@ -782,12 +767,15 @@ public class ThreePowerShot extends LinearOpMode {
         } else if (Direction == FORWARD_WITH_ARM){
 
             Wobbler.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+            LeftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             LeftBack.setTargetPosition(TargetPosition);
+
             LeftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            Wobbler.setPower(1);
+            Wobbler.setPower(-1);
 
-            while (!isStopRequested() && Math.abs(LeftBack.getCurrentPosition()) <= Math.abs(LeftBack.getTargetPosition()) && (failSafeTime > 0 && runtime.seconds() < failSafeTime)) {
+            while (!isStopRequested() && Math.abs(LeftBack.getCurrentPosition()) <= Math.abs(LeftBack.getTargetPosition()) ) {
 
                 correction = backDrive.performPID(getAngle() - desiredAngle);
 
@@ -809,7 +797,7 @@ public class ThreePowerShot extends LinearOpMode {
             LeftBack.setPower(0);
             RightBack.setPower(0);
 
-            while (!isStopRequested() && Math.abs(Wobbler.getCurrentPosition()) <= Math.abs(Wobbler.getTargetPosition())) {
+            while (!isStopRequested() && !WobbleTouch.isPressed()) {
 
                 telemetry.addLine("wobble going");
             }
@@ -844,7 +832,7 @@ public class ThreePowerShot extends LinearOpMode {
     }
 
     public void openWobbleClamper () {
-        WobbleClamper.setPosition(0.5);
+        WobbleClamper.setPosition(0.7);
     }
 
 
@@ -1001,7 +989,7 @@ public class ThreePowerShot extends LinearOpMode {
 
         Wobbler.setPower(1);
 
-        while (opModeIsActive() && Math.abs(Wobbler.getCurrentPosition()) < Math.abs(Wobbler.getTargetPosition())) {
+        while (opModeIsActive() && !WobbleTouch.isPressed()) {
             telemetry.addData("Dropping", "Right Now");
             telemetry.update();
         }
