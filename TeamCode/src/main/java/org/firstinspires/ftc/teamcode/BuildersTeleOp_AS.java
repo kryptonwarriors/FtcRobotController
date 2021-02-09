@@ -49,6 +49,8 @@ public class BuildersTeleOp_AS extends LinearOpMode {
     int i = 1;
     static double conveyorPower;
 
+    boolean endgame = false;
+
     public static double ringDistance;
 
     public RevBlinkinLedDriver blinkblinkboy;
@@ -145,7 +147,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
         waitForStart();
         if (opModeIsActive()) {
 
-            strafe = new PIDController(0.016367*1.57, 0.00016367*1.5, 0);
+            strafe = new PIDController(0.0016367, 0.00016367, 0.000016367);
             strafe.setSetpoint(0);
             strafe.setOutputRange(0, 0.75);
             strafe.setInputRange(-90, 90);
@@ -156,6 +158,12 @@ public class BuildersTeleOp_AS extends LinearOpMode {
 
                 ringDistance =  ((DistanceSensor)color).getDistance(DistanceUnit.CM);
 
+               /* if(time > 5){
+                    endgame = true;
+                } else if(gamepad1.dpad_right){
+                    resetStartTime();
+                }
+*/
                 if (gamepad1.right_trigger > 0.01) {
                     // Strafing to the Right
                     LeftForward.setPower(-Multiplier * Scale(gamepad1.right_trigger));
@@ -200,14 +208,6 @@ public class BuildersTeleOp_AS extends LinearOpMode {
 
                 } else if (gamepad1.left_bumper) {
 
-                    if (LeftDistance.getDistance(DistanceUnit.INCH) > 28) {
-                        moveDistance(LEFT, 0.5, 28);
-                    } else {
-                        moveDistance(RIGHT, 0.5, 28);
-                    }
-
-                   // powershot();
-
                 }
                 else if (gamepad1.y) {
                     //align(0.7);
@@ -242,7 +242,15 @@ public class BuildersTeleOp_AS extends LinearOpMode {
 
                 if (gamepad2.a) {
                     Conveyor.setPower(-0.4);
-                } /*else if (gamepad2.b) {
+                } else if (gamepad1.b) {
+
+                    //POWERSHOT SHOOTING
+
+                    if (LeftDistance.getDistance(DistanceUnit.INCH) > 35) {
+                        moveDistance(LEFT, 0.5, 35);
+                    } else {
+                        moveDistance(RIGHT, 0.5, 35);
+                    }
 
                     if (voltageSensor.getVoltage() > 13.1) {
                         Shooter.setPower(-0.92);
@@ -252,16 +260,37 @@ public class BuildersTeleOp_AS extends LinearOpMode {
 
                     sleep(1300);
 
-                    Conveyor.setPower(-0.6);
-                    Intake.setPower( 0.5);
+                    for (int i = 0; i<3; i++){
+                        Conveyor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-                    sleep(3000);
+                        if(i==0)
+                            Conveyor.setTargetPosition(180);
+                        else if (i == 1)
+                            Conveyor.setTargetPosition(650);
+                        else if (i == 2)
+                            Conveyor.setTargetPosition(1000);
 
-                    Shooter.setPower(0);
-                    Conveyor.setPower(0);
-                    Intake.setPower(0);
+                        Conveyor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                }*/
+                        Intake.setPower(-0.8);
+                        Conveyor.setPower(0.9);
+
+                        while (opModeIsActive() && !isStopRequested() && Math.abs(Conveyor.getCurrentPosition()) <= Math.abs(Conveyor.getTargetPosition())) {
+
+                        }
+
+                        Intake.setPower(0);
+                        Conveyor.setPower(0);
+
+                        sleep(10);
+
+                        resetAngle();
+                        imuTurn(LTURN, 0.3, -7);
+
+                    }
+
+
+                }
 /*
                 if (gamepad1.right_bumper && i == 1) {
                     //Strafe Right to Left Power Shot
@@ -334,7 +363,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
                 telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
                 //telemetry.addData("BackDistance", BackDistance.getDistance(DistanceUnit.INCH));
                 telemetry.addData("FrontDistace", FrontDistance.getDistance(DistanceUnit.INCH));
-                telemetry.addData("Status", "Run Time: " + runtime.toString());
+                telemetry.addData("Time", time);
                 telemetry.addData("RightForward", RightForward.getPower());
                 telemetry.addData("LeftForward", LeftForward.getPower());
                 telemetry.addData("RightBack", RightBack.getPower());
@@ -348,128 +377,8 @@ public class BuildersTeleOp_AS extends LinearOpMode {
 
     }
 
-    public void moveDistance(int Direction, double Power, double distance) {
 
-        LeftForward.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-
-        if (Direction == FORWARD) {
-            while (opModeIsActive() && BackDistance.getDistance(DistanceUnit.INCH) < distance) {
-
-
-                LeftForward.setPower(Power);
-                LeftBack.setPower(Power);
-                RightForward.setPower(Power);
-                RightBack.setPower(Power);
-
-                telemetry.addData("LeftForward", LeftForward.getPower());
-                telemetry.addData("RightForward", RightForward.getPower());
-                telemetry.addData("LeftBack", LeftBack.getPower());
-                telemetry.addData("RightBack", RightBack.getPower());
-                telemetry.addData("BackDistance", BackDistance.getDistance(DistanceUnit.INCH));
-                telemetry.update();
-            }
-        } else if (Direction == BACKWARD) {
-            while (opModeIsActive() && BackDistance.getDistance(DistanceUnit.INCH) > distance) {
-
-
-                LeftForward.setPower(-Power);
-                LeftBack.setPower(-Power);
-                RightForward.setPower(-Power);
-                RightBack.setPower(-Power);
-
-                telemetry.addData("LeftForward", LeftForward.getPower());
-                telemetry.addData("RightForward", RightForward.getPower());
-                telemetry.addData("LeftBack", LeftBack.getPower());
-                telemetry.addData("RightBack", RightBack.getPower());
-                telemetry.addData("RightDistance", BackDistance.getDistance(DistanceUnit.INCH));
-                telemetry.update();
-            }
-        } else if (Direction == RIGHT) {
-            LeftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-            LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-            double angle = getAngle();
-
-
-            while (opModeIsActive() && LeftDistance.getDistance(DistanceUnit.INCH) > distance) {
-
-                correction = strafe.performPID(getAngle() - angle);
-
-                LeftForward.setPower(Power - correction);
-                LeftBack.setPower(-Power - correction);
-                RightForward.setPower(-Power + correction);
-                RightBack.setPower(Power + correction);
-
-                telemetry.addLine("going");
-                telemetry.addData("correction", correction);
-                telemetry.addData("leftback position", LeftBack.getCurrentPosition());
-                telemetry.addData("rightdistance", RightDistance.getDistance(DistanceUnit.INCH));
-                telemetry.update();
-
-            }
-
-            LeftForward.setPower(0);
-            RightForward.setPower(0);
-            LeftBack.setPower(0);
-            RightBack.setPower(0);
-
-
-        } else if (Direction == RIGHTWITHLEFT) {
-            while (opModeIsActive() && LeftDistance.getDistance(DistanceUnit.INCH) < distance) {
-
-
-                LeftForward.setPower(Power);
-                LeftBack.setPower(-Power);
-                RightForward.setPower(-Power);
-                RightBack.setPower(Power);
-
-                telemetry.addData("LeftForward", LeftForward.getPower());
-                telemetry.addData("RightForward", RightForward.getPower());
-                telemetry.addData("LeftBack", LeftBack.getPower());
-                telemetry.addData("RightBack", RightBack.getPower());
-                telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
-                telemetry.update();
-            }
-        } else if (Direction == LEFT) {
-            LeftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-            LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-            double angle = getAngle();
-
-
-            while (opModeIsActive() && LeftDistance.getDistance(DistanceUnit.INCH) < distance) {
-
-                correction = strafe.performPID(getAngle() - angle);
-
-                LeftForward.setPower(-Power - correction);
-                LeftBack.setPower(Power - correction);
-                RightForward.setPower(Power + correction);
-                RightBack.setPower(-Power + correction);
-
-                telemetry.addLine("going");
-                telemetry.addData("correction", correction);
-                telemetry.addData("leftback position", LeftBack.getCurrentPosition());
-                telemetry.addData("rightdistance", RightDistance.getDistance(DistanceUnit.INCH));
-                telemetry.update();
-
-            }
-        }
-        LeftForward.setPower(0);
-        RightForward.setPower(0);
-        LeftBack.setPower(0);
-        RightBack.setPower(0);
-
-        LeftForward.setPower(0);
-        LeftBack.setPower(0);
-        RightForward.setPower(0);
-        RightBack.setPower(0);
-    }
-
-
-    public void align(double power) {
+  /*  public void align(double power) {
 
 
         LeftForward.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -499,7 +408,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
         LeftBack.setPower(0);
         RightBack.setPower(0);
     }
-
+*/
     private double getAngle()
     {
 
@@ -627,6 +536,77 @@ public class BuildersTeleOp_AS extends LinearOpMode {
 
     }
 
+    public void moveDistance(int Direction, double Power, double Distance) {
+
+        LeftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        resetStartTime();
+
+        if (Direction == LEFT) {
+
+            LeftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+            double angle = getAngle();
+
+            while (opModeIsActive() && LeftDistance.getDistance(DistanceUnit.INCH) > Distance) {
+
+                correction = strafe.performPID(getAngle() - angle);
+
+                LeftForward.setPower(-Power - correction);
+                LeftBack.setPower(Power - correction);
+                RightForward.setPower(Power + correction);
+                RightBack.setPower(-Power + correction);
+
+                telemetry.addLine("going");
+                telemetry.addData("correction", correction);
+                telemetry.addData("leftback", LeftBack.getCurrentPosition());
+                telemetry.addData("leftdistance", LeftDistance.getDistance(DistanceUnit.INCH));
+                telemetry.update();
+
+            }
+
+            LeftForward.setPower(0);
+            RightForward.setPower(0);
+            LeftBack.setPower(0);
+            RightBack.setPower(0);
+
+
+        } else if (Direction == RIGHT) {
+
+            LeftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+            double angle = getAngle();
+
+            while (opModeIsActive() && LeftDistance.getDistance(DistanceUnit.INCH) < Distance) {
+
+                correction = strafe.performPID(getAngle() - angle);
+
+                LeftForward.setPower(Power - correction);
+                LeftBack.setPower(-Power - correction);
+                RightForward.setPower(-Power + correction);
+                RightBack.setPower(Power + correction);
+
+                telemetry.addLine("going");
+                telemetry.addData("correction", correction);
+                telemetry.addData("leftback position", LeftBack.getCurrentPosition());
+                telemetry.addData("rightdistance", RightDistance.getDistance(DistanceUnit.INCH));
+                telemetry.update();
+
+            }
+
+            LeftForward.setPower(0);
+            RightForward.setPower(0);
+            LeftBack.setPower(0);
+            RightBack.setPower(0);
+
+
+        }
+
+    }
 
 }
 
