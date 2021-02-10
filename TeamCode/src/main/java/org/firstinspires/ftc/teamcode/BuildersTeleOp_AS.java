@@ -204,7 +204,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
                 } else if (gamepad1.right_bumper) {
 
                     resetAngle();
-                    imuTurn(LTURN, 0.3, -7);
+                    imuTurn(RTURN, 0.3, 7);
 
                 } else if (gamepad1.left_bumper) {
 
@@ -242,7 +242,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
 
                 if (gamepad2.a) {
                     Conveyor.setPower(-0.4);
-                } else if (gamepad1.b) {
+                } else if (gamepad1.back) {
 
                     //POWERSHOT SHOOTING
 
@@ -309,10 +309,6 @@ public class BuildersTeleOp_AS extends LinearOpMode {
                     Wobbler.setPower(-gamepad2.left_stick_y);
                 } else {
                     Wobbler.setPower(0);
-                }
-
-                if (gamepad1.left_bumper) {
-
                 }
 
                 if (gamepad2.dpad_up) {
