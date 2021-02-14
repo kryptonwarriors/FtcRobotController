@@ -30,32 +30,56 @@ package org.firstinspires.ftc.teamcode.autos;
  */
 
 
+import android.graphics.Color;
+
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.robotcontroller.external.samples.SensorREVColorDistance;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Autonomous(name = "ColorSensorAuto", group = "test")
 public class ColorSensorAuto extends LinearOpMode {
 
-    NormalizedColorSensor colorSensor;
-    RevBlinkinLedDriver.BlinkinPattern lights;
+    public ColorSensor colorSensor;
+    RevBlinkinLedDriver.BlinkinPattern pattern;
     public DcMotor LeftForward, LeftBack, RightForward, RightBack;
     public RevBlinkinLedDriver blinkblinkboy;
+    public double channelDistance;
+    Telemetry.Item patternName;
+
 
     @Override
     public void runOpMode() {
 
        // colorSensor = (NormalizedColorSensor)hardwareMap.colorSensor.get("color");
         blinkblinkboy = hardwareMap.get(RevBlinkinLedDriver.class, "blinkblinkboy");
+        colorSensor = hardwareMap.get(ColorSensor.class, "color");
 
-        blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.ORANGE);
+        blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.SINELON_RAINBOW_PALETTE);
 
         waitForStart();
 
         while(opModeIsActive() && !isStopRequested()) {
+
+            channelDistance = ((DistanceSensor) colorSensor).getDistance(DistanceUnit.CM);
+
+
+            if(channelDistance <= 2){
+                blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.WHITE);
+            } else {
+                blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.ORANGE);
+            }
+
+
 
            // NormalizedRGBA colors = colorSensor.getNormalizedColors();
 

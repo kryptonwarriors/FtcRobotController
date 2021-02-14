@@ -341,19 +341,25 @@ public class BuildersTeleOp_AS extends LinearOpMode {
         Wobbler.setPower(0);
       }
 */
-/*
-                if (ringDistance < 2){
+
+                if (ringDistance < 3){
+
                     blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.WHITE);
-                    telemetry.addLine("ringpresent");
-                    telemetry.update();
-                } else {
+                } else if(80 > time && time > 60){
                     blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.ORANGE);
-                    telemetry.addLine("no ring");
-                    telemetry.update();
+                } else if(110 > time && time > 80){
+                    blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
+                } else if(115 > time && time > 110){
+                    blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.DARK_BLUE);
+                } else if (time > 115){
+                    blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.STROBE_RED);
+                } else {
+                    blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.RAINBOW_RAINBOW_PALETTE);
                 }
-*/
 
 
+
+                telemetry.addData("time", time);
                 telemetry.addData("WobbleTouch", WobbleTouch.getValue());
                 telemetry.addData("LeftDistance", LeftDistance.getDistance(DistanceUnit.INCH));
                 telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
@@ -456,7 +462,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
             RightForward.setPower(-power);
             RightBack.setPower(-power);
 
-            while (opModeIsActive() && getAngle() >= angle){
+            while (opModeIsActive() && getAngle() <= angle){
                 telemetry.addData("currentAngle", getAngle());
                 telemetry.addData("currentEncoderPosition", LeftForward.getCurrentPosition());
                 telemetry.addLine("Turning :)");
@@ -467,7 +473,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
             LeftBack.setPower(0);
             RightForward.setPower(0);
             RightBack.setPower(0);
-        }
+        }//aarav was here.
     }
 
     public void powershot(){
