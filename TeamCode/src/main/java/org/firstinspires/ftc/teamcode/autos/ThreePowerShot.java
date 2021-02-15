@@ -68,6 +68,7 @@ public class ThreePowerShot extends LinearOpMode {
     PIDController strafe;
     PIDController diagonal;
     PIDController leftStrafe;
+    PIDController cDrive;
 
     public TouchSensor WobbleTouch;
 
@@ -81,7 +82,7 @@ public class ThreePowerShot extends LinearOpMode {
     int UPLEFT = 8;
     int UPRIGHT = 9;
     int FORWARD_WITH_ARM = 14;
-    int FORWARDWITHBACK = 15;
+    int cForward = 15;
     int DISTANCELEFT = 16;
 
     private VoltageSensor voltageSensor;
@@ -253,6 +254,12 @@ public class ThreePowerShot extends LinearOpMode {
             leftStrafe.setInputRange(-90, 90);
             leftStrafe.enable();
 
+            cDrive = new PIDController(0, 0, 0);
+            cDrive.setSetpoint(0);
+            cDrive.setOutputRange(0, 0.75);
+            cDrive.setInputRange(-90, 90);
+            cDrive.enable();
+
 //GO TO POWERSHOTS
             moveEncoders(Forward, 0.6, 1240, 0, 0);
 
@@ -330,7 +337,7 @@ public class ThreePowerShot extends LinearOpMode {
 
                 sleep(10);
 
-                moveEncoders(Forward, 0.7, 2300, 0, 30);
+                moveEncoders(cForward, 0.7, 2300, 0, 30);
 
                 imuTurn(RTURN, 0.4, -15);
 
@@ -405,27 +412,25 @@ public class ThreePowerShot extends LinearOpMode {
 
                 sleep(50);
 
-                moveDistance(RIGHT, 0.4, 16.21 + .1220 - 2.75, -90, 20);
-
-                imuTurn(RTURN, 0.3, -90);
+                moveDistance(RIGHT, 0.4, 16.21 + .1220, -90, 20);
 
                 sleep(100);
 
                 //FORWARD FAST THEN SLOW TO GRAB SECOND WOBBLE GOAL
 
-                moveEncoders(Forward, 0.7, 150, -94,20);
+                moveEncoders(Forward, 0.7, 150, -90,20);
 
                 sleep(50);
 
-                moveDistance(FORWARD, 0.25, 28.25, -94, 20);
+                moveDistance(FORWARD, 0.25, 28.75, -90, 20);
+
+                sleep(200);
 
                 closeWobbleClamper();
 
-                sleep(700);
+                sleep(300);
 
-                sleep(100);
-
-               liftWobbleGoal(1800);
+                liftWobbleGoal(1400);
 
                 sleep(200);
 
@@ -544,7 +549,7 @@ public class ThreePowerShot extends LinearOpMode {
 
             }
 
-            liftWobbleGoal(16367/2 - 900 - 1800);
+            liftWobbleGoal(16367/2 - 900 - 1200);
 
         }
 
@@ -675,6 +680,32 @@ public class ThreePowerShot extends LinearOpMode {
             while (!isStopRequested() && Math.abs(LeftBack.getCurrentPosition()) <= Math.abs(LeftBack.getTargetPosition())) {
 
                 correction = drive.performPID(getAngle() - desiredAngle);
+
+                LeftForward.setPower(Power - correction);
+                LeftBack.setPower(Power - correction);
+                RightForward.setPower(Power + correction);
+                RightBack.setPower(Power + correction);
+
+
+                telemetry.addLine("going");
+                telemetry.addData("correction", correction);
+                telemetry.update();
+
+
+            }
+
+            LeftForward.setPower(0);
+            RightForward.setPower(0);
+            LeftBack.setPower(0);
+            RightBack.setPower(0);
+        }else if(Direction == cForward){
+            LeftBack.setTargetPosition(TargetPosition);
+
+            LeftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            while (!isStopRequested() && Math.abs(LeftBack.getCurrentPosition()) <= Math.abs(LeftBack.getTargetPosition())) {
+
+                correction = cDrive.performPID(getAngle() - desiredAngle);
 
                 LeftForward.setPower(Power - correction);
                 LeftBack.setPower(Power - correction);

@@ -346,12 +346,16 @@ public class BuildersTeleOp_AS extends LinearOpMode {
 
                     blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.WHITE);
                 } else if(80 > time && time > 60){
+                    // 30 seconds before endgame
                     blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.ORANGE);
                 } else if(110 > time && time > 80){
+                    //10 seconds before endgame
                     blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
                 } else if(115 > time && time > 110){
+                    //20 seconds before end
                     blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.DARK_BLUE);
                 } else if (time > 115){
+                    //5 seconds before end
                     blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.STROBE_RED);
                 } else {
                     blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.RAINBOW_RAINBOW_PALETTE);
