@@ -28,8 +28,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.util.PIDController;
 
-@TeleOp(name = "BuildersTeleOp_AS", group = "")
-public class BuildersTeleOp_AS extends LinearOpMode {
+@TeleOp(name = "newTele", group = "")
+public class newTele extends LinearOpMode {
 
     private DcMotor RightForward, RightBack, LeftForward, LeftBack, Intake, Shooter, Conveyor, Wobbler;
     private Servo WobbleClamper, RingClamper;
@@ -76,36 +76,38 @@ public class BuildersTeleOp_AS extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-
+/*
         RightForward = hardwareMap.dcMotor.get("RightForward");
         RightBack = hardwareMap.dcMotor.get("RightBack");
         LeftForward = hardwareMap.dcMotor.get("LeftForward");
         LeftBack = hardwareMap.dcMotor.get("LeftBack");
 
-        WobbleTouch = hardwareMap.get(TouchSensor.class, "WobbleTouch");
+ */
 
-        blinkblinkboy = hardwareMap.get(RevBlinkinLedDriver.class, "blinkblinkboy");
+        //  WobbleTouch = hardwareMap.get(TouchSensor.class, "WobbleTouch");
 
-        color = hardwareMap.get(ColorSensor.class, "color");
+        //blinkblinkboy = hardwareMap.get(RevBlinkinLedDriver.class, "blinkblinkboy");
+
+        // color = hardwareMap.get(ColorSensor.class, "color");
 
         Intake = hardwareMap.dcMotor.get("Intake");
         Conveyor = hardwareMap.dcMotor.get("Conveyor");
         Shooter = hardwareMap.dcMotor.get("Shooter");
-
+/*
         Wobbler = hardwareMap.dcMotor.get("Wobbler");
 
         RightDistance = hardwareMap.get(DistanceSensor.class, "RightDistance");
         BackDistance = hardwareMap.get(DistanceSensor.class, "BackDistance");
         FrontDistance = hardwareMap.get(DistanceSensor.class, "FrontDistance");
         LeftDistance = hardwareMap.get(DistanceSensor.class, "LeftDistance");
-
+*/
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
-        WobbleClamper = hardwareMap.servo.get("WobbleClamper");
+        // WobbleClamper = hardwareMap.servo.get("WobbleClamper");
     /*
     Ringer = hardwareMap.dcMotor.get("Ringer");
     RingClamper = hardwareMap.servo.get("RingClamper");
-    
+
     */
 
         imu = hardwareMap.get( BNO055IMU.class, "imu");
@@ -114,7 +116,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
         imuParameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         imuParameters.loggingEnabled = false;
         imu.initialize(imuParameters);
-
+/*
         RightBack.setDirection(DcMotor.Direction.REVERSE);
         LeftForward.setDirection(DcMotor.Direction.REVERSE);
 
@@ -130,17 +132,17 @@ public class BuildersTeleOp_AS extends LinearOpMode {
         Shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         Conveyor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         Wobbler.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        WobbleClamper.setPosition(0.7);
-
+*/
+        //  WobbleClamper.setPosition(0.7);
+/*
         RightForward.setPower(0);
         RightBack.setPower(0);
         LeftForward.setPower(0);
         LeftBack.setPower(0);
 
+ */
 
-
-        WobbleClamper.setPosition(0);
+        // WobbleClamper.setPosition(0);
         telemetry.addData(">", "INIT DONE");
 // RESET TIME
         runtime.reset();
@@ -159,7 +161,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
 
             while (opModeIsActive()) {
 
-                ringDistance =  ((DistanceSensor)color).getDistance(DistanceUnit.CM);
+                //ringDistance =  ((DistanceSensor)color).getDistance(DistanceUnit.CM);
 
                /* if(time > 5){
                     endgame = true;
@@ -168,9 +170,9 @@ public class BuildersTeleOp_AS extends LinearOpMode {
                 }
 
 */
-               if(gamepad1.b){
-                   resetStartTime();
-               }
+                if(gamepad1.b){
+                    resetStartTime();
+                }
 
                 if (gamepad1.right_trigger > 0.01) {
                     // Strafing to the Right
@@ -225,12 +227,12 @@ public class BuildersTeleOp_AS extends LinearOpMode {
                 } else if (gamepad1.dpad_right) {
                     LeftForward.setPower(-0.7);
                     RightBack.setPower(-0.7);
-                } else {
+                } else {/*
                     RightBack.setPower(Multiplier * Scale(gamepad1.right_stick_y));
                     RightForward.setPower(Multiplier * Scale(gamepad1.right_stick_y));
                     LeftForward.setPower(Multiplier * Scale(gamepad1.left_stick_y));
                     LeftBack.setPower(Multiplier * Scale(gamepad1.left_stick_y));
-
+                    */
         /*Ringer.setPower(gamepad2.left_stick_y);
         Wobbler.setPower(gamepad2.right_stick_y);*/
                 }
@@ -253,79 +255,66 @@ public class BuildersTeleOp_AS extends LinearOpMode {
                     Conveyor.setPower(-0.4);
                 } else if (gamepad1.back) {
 
-                        //POWERSHOT SHOOTING
+                    //POWERSHOT SHOOTING
 
-                        if (LeftDistance.getDistance(DistanceUnit.INCH) > 24) {
-                            moveDistance(LEFT, 0.5, 24);
-                        } else {
-                            moveDistance(RIGHT, 0.5, 15);
-                        }
+                    if (LeftDistance.getDistance(DistanceUnit.INCH) > 24) {
+                        moveDistance(LEFT, 0.5, 24);
+                    } else {
+                        moveDistance(RIGHT, 0.5, 19);
+                    }
 
-                        sleep(3000);
+                    sleep(100);
 
-                        if (voltageSensor.getVoltage() > 13.1) {
-                            Shooter.setPower(-0.48);
-                        } else {
-                            Shooter.setPower(-0.5);
-                        }
+                    if (voltageSensor.getVoltage() > 13.1) {
+                        Shooter.setPower(0.92);
+                    } else {
+                        Shooter.setPower(.96);
+                    }
 
+                    sleep(1300);
 
+                    for (int i = 0; i<3; i++){
+                        Conveyor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-                        sleep(1300);
+                        if(i==0)
+                            Conveyor.setTargetPosition(180);
+                        else if (i == 1)
+                            Conveyor.setTargetPosition(650);
+                        else if (i == 2)
+                            Conveyor.setTargetPosition(1000);
 
-                        for (int i = 0; i < 3; i++) {
+                        Conveyor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                            if(i == 0)
-                                Shooter.setPower(-0.53);
+                        Intake.setPower(-0.8);
+                        Conveyor.setPower(0.9);
 
-
-                            Conveyor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-                            if (i == 0)
-                                Conveyor.setTargetPosition(180);
-                            else if (i == 1)
-                                Conveyor.setTargetPosition(650);
-                            else if (i == 2)
-                                Conveyor.setTargetPosition(1000);
-
-                            Conveyor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-                            Intake.setPower(-0.8);
-                            Conveyor.setPower(0.9);
-
-                            while (opModeIsActive() && !isStopRequested() && Math.abs(Conveyor.getCurrentPosition()) <= Math.abs(Conveyor.getTargetPosition())) {
-
-                            }
-
-                            Intake.setPower(0);
-                            Conveyor.setPower(0);
-
-                            sleep(10);
-
-                            resetAngle();
-
-                            if(i == 1)
-                            imuTurn(LTURN, 0.3, -4);
-                            else
-                                imuTurn(LTURN, 0.3, -7);
-
-
-                            sleep(2000);
+                        while (opModeIsActive() && !isStopRequested() && Math.abs(Conveyor.getCurrentPosition()) <= Math.abs(Conveyor.getTargetPosition())) {
 
                         }
+
+                        Intake.setPower(0);
+                        Conveyor.setPower(0);
+
+                        sleep(10);
+
+                        resetAngle();
+                        imuTurn(LTURN, 0.3, -7);
+
+                    }
+
 
                 }
 
                 if (gamepad2.left_stick_y > 0.01 || gamepad2.left_stick_y < -0.01) {
                     Wobbler.setPower(-gamepad2.left_stick_y);
                 } else {
-                   Wobbler.setPower(0);
+                    //Wobbler.setPower(0);
                 }
 
                 if (gamepad2.dpad_up) {
-                    Shooter.setPower(-0.96);
+                    Shooter.setPower(0.96);
                 } else if (gamepad2.dpad_down) {
-                    Shooter.setPower(-0.5);
+                    Shooter.setPower(0.5);
                 } else {
                     Shooter.setPower(0);
                 }
@@ -345,14 +334,14 @@ public class BuildersTeleOp_AS extends LinearOpMode {
       /*
       if (gamepad2.dpad_left) {
         Wobbler.setPower(1);
-        
+
       } else if (gamepad2.dpad_right){
         Wobbler.setPower(-1);
       } else {
         Wobbler.setPower(0);
       }
 */
-
+/*
                 if (ringDistance < 3){
 
                     blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.WHITE);
@@ -361,17 +350,13 @@ public class BuildersTeleOp_AS extends LinearOpMode {
                     // 30 seconds before endgame
                     blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.ORANGE);
 
-                } else if(90 > time && time > 80){
+                } else if(110 > time && time > 80){
                     //10 seconds before endgame
-                    blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED_ORANGE);
-
-                } else if(110 > time && time > 90){
-                    //Endgame
                     blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
 
-                } else if (time < 115 && time > 110){
-                    //10 seconds before end
-                    blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.STROBE_WHITE);
+                } else if(115 > time && time > 110){
+                    //20 seconds before end
+                    blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.DARK_BLUE);
 
                 } else if (time < 120 && time > 115){
                     //5 seconds before end
@@ -383,11 +368,11 @@ public class BuildersTeleOp_AS extends LinearOpMode {
                     blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.RAINBOW_RAINBOW_PALETTE);
 
                 }
-
+*/
 
 
                 telemetry.addData("time", time);
-                telemetry.addData("WobbleTouch", WobbleTouch.getValue());
+                /*telemetry.addData("WobbleTouch", WobbleTouch.getValue());
                 telemetry.addData("LeftDistance", LeftDistance.getDistance(DistanceUnit.INCH));
                 telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
                 //telemetry.addData("BackDistance", BackDistance.getDistance(DistanceUnit.INCH));
@@ -398,9 +383,9 @@ public class BuildersTeleOp_AS extends LinearOpMode {
                 telemetry.addData("RightBack", RightBack.getPower());
                 telemetry.addData("LeftBack", LeftBack.getPower());
 
-
+                 */
                 telemetry.addData("Voltage", voltageSensor.getVoltage());
-               // telemetry.addData("ringDistance", ((DistanceSensor)color).getDistance(DistanceUnit.CM));
+                // telemetry.addData("ringDistance", ((DistanceSensor)color).getDistance(DistanceUnit.CM));
                 telemetry.update();
             }
         }
@@ -409,37 +394,37 @@ public class BuildersTeleOp_AS extends LinearOpMode {
     }
 
 
-  /*  public void align(double power) {
+    /*  public void align(double power) {
 
 
-        LeftForward.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        LeftForward.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+          LeftForward.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+          LeftForward.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
 
-        LeftForward.setPower(0);
-        RightForward.setPower(0);
-        LeftBack.setPower(0);
-        RightBack.setPower(0);
+          LeftForward.setPower(0);
+          RightForward.setPower(0);
+          LeftBack.setPower(0);
+          RightBack.setPower(0);
 
-        //Move to Launch Line Vertically
-        moveDistance(FORWARD, 0.7, inchesToVerticalAlignment);
+          //Move to Launch Line Vertically
+          moveDistance(FORWARD, 0.7, inchesToVerticalAlignment);
 
-        sleep(700);
+          sleep(700);
 
-        //Align Horizontally for Shooting
+          //Align Horizontally for Shooting
 
-        if (RightDistance.getDistance(DistanceUnit.INCH) < inchesToHorizontalAlignment) {
-            moveDistance(LEFT, 0.7, inchesToHorizontalAlignment);
-        } else if (RightDistance.getDistance(DistanceUnit.INCH) > inchesToHorizontalAlignment) {
-            moveDistance(RIGHT, 0.7, inchesToHorizontalAlignment + 2);
-        }
+          if (RightDistance.getDistance(DistanceUnit.INCH) < inchesToHorizontalAlignment) {
+              moveDistance(LEFT, 0.7, inchesToHorizontalAlignment);
+          } else if (RightDistance.getDistance(DistanceUnit.INCH) > inchesToHorizontalAlignment) {
+              moveDistance(RIGHT, 0.7, inchesToHorizontalAlignment + 2);
+          }
 
-        LeftForward.setPower(0);
-        RightForward.setPower(0);
-        LeftBack.setPower(0);
-        RightBack.setPower(0);
-    }
-*/
+          LeftForward.setPower(0);
+          RightForward.setPower(0);
+          LeftBack.setPower(0);
+          RightBack.setPower(0);
+      }
+  */
     private double getAngle()
     {
 
@@ -581,7 +566,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
 
             double angle = getAngle();
 
-            while (!isStopRequested() && opModeIsActive() && LeftDistance.getDistance(DistanceUnit.INCH) > Distance && !gamepad2.start) {
+            while (!isStopRequested() && opModeIsActive() && LeftDistance.getDistance(DistanceUnit.INCH) > Distance) {
 
                 correction = strafe.performPID(getAngle() - angle);
 
@@ -612,7 +597,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
 
             double angle = getAngle();
 
-            while (!isStopRequested() && opModeIsActive() && LeftDistance.getDistance(DistanceUnit.INCH) < Distance && !gamepad2.start) {
+            while (!isStopRequested() && opModeIsActive() && LeftDistance.getDistance(DistanceUnit.INCH) < Distance) {
 
                 correction = strafe.performPID(getAngle() - angle);
 
