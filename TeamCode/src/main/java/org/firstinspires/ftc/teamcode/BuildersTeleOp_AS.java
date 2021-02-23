@@ -243,7 +243,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
                     Conveyor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                     Conveyor.setPower(-0.9 * Scale(gamepad2.right_stick_y));
                 } else if (gamepad2.x) {
-                    Conveyor.setPower(0.6);
+                    Conveyor.setPower(0.36);
                 } else {
                     Intake.setPower(0);
                     Conveyor.setPower(0);
@@ -325,7 +325,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
                 if (gamepad2.dpad_up) {
                     Shooter.setPower(-0.96);
                 } else if (gamepad2.dpad_down) {
-                    Shooter.setPower(-0.5);
+                    Shooter.setPower(-0.53);
                 } else {
                     Shooter.setPower(0);
                 }
@@ -378,9 +378,9 @@ public class BuildersTeleOp_AS extends LinearOpMode {
                     blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.STROBE_RED);
 
                 } else if(time > 120){
-                    blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.RAINBOW_RAINBOW_PALETTE);
+                    blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE);
                 }else {
-                    blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.RAINBOW_RAINBOW_PALETTE);
+                    blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE);
 
                 }
 

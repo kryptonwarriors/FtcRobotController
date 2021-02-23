@@ -190,7 +190,7 @@ public class ThreePowerShot extends LinearOpMode {
             } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.B) {
 
                 angleToDrop = -30;
-                encodersToDrop = 550;
+                encodersToDrop = 600;
                 diagonalDistance = 20;
                 secondWobbleGoalDistance = 37;
                 secondWobbleEncoderDistance = 400;
@@ -199,15 +199,15 @@ public class ThreePowerShot extends LinearOpMode {
 
             } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.A){
 
-                encodersToDrop = 520;
-                angleToDrop = -77;
+                encodersToDrop = 550;
+                angleToDrop = -88;
                 diagonalDistance = 15;
                 secondWobbleGoalDistance = 52;
                 secondWobbleEncoderDistance = 100;
                 position = 1;
 
             }
-
+/*
             if(BackDistance.getDistance(DistanceUnit.INCH) > 10 || LeftDistance.getDistance(DistanceUnit.INCH) > 150 || RightDistance.getDistance(DistanceUnit.INCH) > 150){
                 blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.STROBE_RED);
             } else {
@@ -221,7 +221,7 @@ public class ThreePowerShot extends LinearOpMode {
                 checkFrontDist = true;
                 telemetry.addLine("IS BEING CHECKED");
             }
-
+*/
             telemetry.addData("Value", pipeline.getAnalysis());
             telemetry.addData("checkFrontDist", checkFrontDist);
             telemetry.addData("ringConfig", pipeline.configuration);
@@ -290,7 +290,7 @@ public class ThreePowerShot extends LinearOpMode {
 
             sleep(200);
 
-           // powershot();
+            powershot();
 
             sleep(200);
 
@@ -308,7 +308,6 @@ public class ThreePowerShot extends LinearOpMode {
             if(position == 3) {
 
                 //GO BACK FROM WOBBLE GOAL
-                //TODO MAKE THIS ENCODERS
 
                 LeftForward.setPower(-0.8);
                 RightForward.setPower(-0.8);
@@ -340,7 +339,7 @@ public class ThreePowerShot extends LinearOpMode {
 
                 sleep(50);
 
-                moveDistance(FORWARD, 0.25, 28.75, -90, 8);
+                moveDistance(FORWARD, 0.25, 27.75, -90, 4);
 
                 sleep(200);
 
@@ -354,7 +353,7 @@ public class ThreePowerShot extends LinearOpMode {
 
                 sleep(50);
 
-                imuTurn(LTURN, 0.5, -8);
+                imuTurn(LTURN, 0.5, -16);
 
                 sleep(10);
 
@@ -369,54 +368,6 @@ public class ThreePowerShot extends LinearOpMode {
                 moveEncoders(BACKWARD, 0.7, 700, 0);
 
 
-
-/*
-                sleep(10);
-
-                dropWobbleGoal();
-
-                sleep(10);
-
-                moveEncoders(BACKWARD, 0.7, 800, 0,30);
-
-
-
-                //TURN TO TARGET ZONE
-/*
-                imuTurn(LTURN, 0.4,-46);
-
-                sleep(50);
-
-               moveEncoders(Forward, 0.7, 2300, -30, 6);
-
-                //DROP WOBBLE GOAL
-
-                imuTurn(RTURN, 0.3, -33);
-
-                dropWobbleGoal();
-
-                sleep(100);
-
-                liftWobbleGoal(2000);
-
-                //BACKWARD ONTO LAUNCHLINE
-
-                moveEncoders(BACKWARD, 0.7, 800, -33, 1.5);
-
-
-                /*
-                LeftForward.setPower(-0.7);
-                RightForward.setPower(-0.7);
-                LeftBack.setPower(-0.7);
-                RightBack.setPower(-0.7);
-
-                sleep(800);
-
-                LeftForward.setPower(0);
-                RightForward.setPower(0);
-                LeftBack.setPower(0);
-                RightBack.setPower(0);
-*/
             } else if (position == 2) {
                 sleep(200);
 
@@ -433,17 +384,18 @@ public class ThreePowerShot extends LinearOpMode {
 
                 sleep(50);
 
-                moveDistance(RIGHT, 0.4, 16.21 + .1220, -90, 6);
+                moveDistance(RIGHT, 0.4, 8 + .1220, -90, 6);
 
                 sleep(100);
 
                 //FORWARD FAST THEN SLOW TO GRAB SECOND WOBBLE GOAL
+                sleep(50);
 
                 moveEncoders(Forward, 0.7, 150, -90);
 
-                sleep(50);
+                sleep(100);
 
-                moveDistance(FORWARD, 0.25, 28.75, -90, 4);
+                moveDistance(FORWARD, 0.25, 31, -90, 4);
 
                 sleep(200);
 
@@ -456,22 +408,10 @@ public class ThreePowerShot extends LinearOpMode {
                 sleep(200);
 
                 moveEncoders(BACKWARD, 0.7, 500, -90);
-/*
-                LeftForward.setPower(-0.6);
-                RightForward.setPower(-0.6);
-                LeftBack.setPower(-0.6);
-                RightBack.setPower(-0.6);
 
-                sleep(500);
-
-                LeftForward.setPower(0);
-                RightForward.setPower(0);
-                LeftBack.setPower(0);
-                RightBack.setPower(0);
-*/
                 sleep(50);
 
-                moveEncoders(LEFT, 0.75, 2380, -90);
+                moveEncoders(LEFT, 0.75, 2530, -90);
 
                 sleep(50);
 
@@ -483,9 +423,9 @@ public class ThreePowerShot extends LinearOpMode {
 
                 liftWobbleGoal(3000);
 
-                moveEncoders(RIGHT, 0.9, 130, -90);
+                moveEncoders(RIGHT, 0.9, 1, -90);
 
-                liftWobbleGoal(16367/2 - 900 - 5000);
+                //liftWobbleGoal(16367/2 - 900 - 5000);
 
 
             }
@@ -493,19 +433,7 @@ public class ThreePowerShot extends LinearOpMode {
 
                 moveEncoders(BACKWARD, 0.4, 400, -90);
 
-                /*
-                LeftBack.setPower(-0.4);
-                LeftForward.setPower(-0.4);
-                RightForward.setPower(-0.4);
-                RightBack.setPower(-0.4);
 
-                sleep(1100);
-
-                LeftBack.setPower(0);
-                LeftForward.setPower(0);
-                RightForward.setPower(0);
-                RightBack.setPower(0);
-*/
                 sleep(100);
 
                 if (initialVoltage > 13) {
@@ -525,26 +453,10 @@ public class ThreePowerShot extends LinearOpMode {
 
                 liftWobbleGoal(1400);
 
-                moveEncoders(LEFT, 0.7, 2170, -90);
+                moveEncoders(LEFT, 0.7, 2110, -90);
 
                 sleep(50);
 
-                moveEncoders(Forward, 0.7, 70, -90);
-
-                //moveEncoders(TURNED_FORWARD, 0.7, 50, -90);
-                /*
-                    LeftForward.setPower(0.7);
-                    RightForward.setPower(0.7);
-                    LeftBack.setPower(0.7);
-                    RightBack.setPower(0.7);
-
-                    sleep(200);
-
-                    LeftForward.setPower(0);
-                    RightForward.setPower(0);
-                    LeftBack.setPower(0);
-                    RightBack.setPower(0);
-*/
                 dropWobbleGoal();
 
                 sleep(50);
@@ -554,23 +466,11 @@ public class ThreePowerShot extends LinearOpMode {
                 sleep(50);
 
                 moveEncoders(BACKWARD, 0.7, 100, -90);
-/*
-                LeftForward.setPower(-0.6);
-                RightForward.setPower(-0.6);
-                LeftBack.setPower(-0.6);
-                RightBack.setPower(-0.6);
 
-                sleep(300);
-
-                LeftForward.setPower(0);
-                RightForward.setPower(0);
-                LeftBack.setPower(0);
-                RightBack.setPower(0);
-*/
 
             }
 
-            liftWobbleGoal(16367/2 - 900 - 1200);
+            //liftWobbleGoal(16367/2 - 900 - 800);
 
         }
 
