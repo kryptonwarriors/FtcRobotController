@@ -76,15 +76,15 @@ public class newTele extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-/*
+
         RightForward = hardwareMap.dcMotor.get("RightForward");
         RightBack = hardwareMap.dcMotor.get("RightBack");
         LeftForward = hardwareMap.dcMotor.get("LeftForward");
         LeftBack = hardwareMap.dcMotor.get("LeftBack");
 
- */
 
-        //  WobbleTouch = hardwareMap.get(TouchSensor.class, "WobbleTouch");
+
+        WobbleTouch = hardwareMap.get(TouchSensor.class, "WobbleTouch");
 
         //blinkblinkboy = hardwareMap.get(RevBlinkinLedDriver.class, "blinkblinkboy");
 
@@ -93,17 +93,17 @@ public class newTele extends LinearOpMode {
         Intake = hardwareMap.dcMotor.get("Intake");
         Conveyor = hardwareMap.dcMotor.get("Conveyor");
         Shooter = hardwareMap.dcMotor.get("Shooter");
-/*
+
         Wobbler = hardwareMap.dcMotor.get("Wobbler");
 
         RightDistance = hardwareMap.get(DistanceSensor.class, "RightDistance");
-        BackDistance = hardwareMap.get(DistanceSensor.class, "BackDistance");
+        //BackDistance = hardwareMap.get(DistanceSensor.class, "BackDistance");
         FrontDistance = hardwareMap.get(DistanceSensor.class, "FrontDistance");
         LeftDistance = hardwareMap.get(DistanceSensor.class, "LeftDistance");
-*/
+
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
-        // WobbleClamper = hardwareMap.servo.get("WobbleClamper");
+        WobbleClamper = hardwareMap.servo.get("WobbleClamper");
     /*
     Ringer = hardwareMap.dcMotor.get("Ringer");
     RingClamper = hardwareMap.servo.get("RingClamper");
@@ -116,10 +116,9 @@ public class newTele extends LinearOpMode {
         imuParameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         imuParameters.loggingEnabled = false;
         imu.initialize(imuParameters);
-/*
-        RightBack.setDirection(DcMotor.Direction.REVERSE);
-        LeftForward.setDirection(DcMotor.Direction.REVERSE);
 
+        RightBack.setDirection(DcMotor.Direction.REVERSE);
+        RightForward.setDirection(DcMotor.Direction.REVERSE);
 
         RightForward.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         RightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -132,17 +131,18 @@ public class newTele extends LinearOpMode {
         Shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         Conveyor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         Wobbler.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-*/
+        Shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         //  WobbleClamper.setPosition(0.7);
-/*
+
         RightForward.setPower(0);
         RightBack.setPower(0);
         LeftForward.setPower(0);
         LeftBack.setPower(0);
 
- */
 
-        // WobbleClamper.setPosition(0);
+
+        WobbleClamper.setPosition(0);
         telemetry.addData(">", "INIT DONE");
 // RESET TIME
         runtime.reset();
@@ -227,12 +227,12 @@ public class newTele extends LinearOpMode {
                 } else if (gamepad1.dpad_right) {
                     LeftForward.setPower(-0.7);
                     RightBack.setPower(-0.7);
-                } else {/*
+                } else {
                     RightBack.setPower(Multiplier * Scale(gamepad1.right_stick_y));
                     RightForward.setPower(Multiplier * Scale(gamepad1.right_stick_y));
                     LeftForward.setPower(Multiplier * Scale(gamepad1.left_stick_y));
                     LeftBack.setPower(Multiplier * Scale(gamepad1.left_stick_y));
-                    */
+
         /*Ringer.setPower(gamepad2.left_stick_y);
         Wobbler.setPower(gamepad2.right_stick_y);*/
                 }
@@ -308,11 +308,11 @@ public class newTele extends LinearOpMode {
                 if (gamepad2.left_stick_y > 0.01 || gamepad2.left_stick_y < -0.01) {
                     Wobbler.setPower(-gamepad2.left_stick_y);
                 } else {
-                    //Wobbler.setPower(0);
+                    Wobbler.setPower(0);
                 }
 
                 if (gamepad2.dpad_up) {
-                    Shooter.setPower(0.96);
+                    Shooter.setPower(0.54);
                 } else if (gamepad2.dpad_down) {
                     Shooter.setPower(0.5);
                 } else {
@@ -372,7 +372,7 @@ public class newTele extends LinearOpMode {
 
 
                 telemetry.addData("time", time);
-                /*telemetry.addData("WobbleTouch", WobbleTouch.getValue());
+                telemetry.addData("WobbleTouch", WobbleTouch.getValue());
                 telemetry.addData("LeftDistance", LeftDistance.getDistance(DistanceUnit.INCH));
                 telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
                 //telemetry.addData("BackDistance", BackDistance.getDistance(DistanceUnit.INCH));
@@ -383,7 +383,7 @@ public class newTele extends LinearOpMode {
                 telemetry.addData("RightBack", RightBack.getPower());
                 telemetry.addData("LeftBack", LeftBack.getPower());
 
-                 */
+
                 telemetry.addData("Voltage", voltageSensor.getVoltage());
                 // telemetry.addData("ringDistance", ((DistanceSensor)color).getDistance(DistanceUnit.CM));
                 telemetry.update();

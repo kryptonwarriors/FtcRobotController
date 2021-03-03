@@ -54,7 +54,7 @@ public class ThreePowerShot extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     public DcMotor LeftForward, LeftBack, RightForward, RightBack, Wobbler, Ringer, Intake, Conveyor, Shooter;
     public Servo WobbleClamper, RingClamper;
-    public DistanceSensor BackDistance, RightDistance, FrontDistance, LeftDistance;
+    public DistanceSensor RightDistance, FrontDistance, LeftDistance;
 
     public OpenCvCamera webcam;
     public RingDeterminationPipeline pipeline;
@@ -91,7 +91,7 @@ public class ThreePowerShot extends LinearOpMode {
     private VoltageSensor voltageSensor;
     private double initialVoltage;
 
-    private RevBlinkinLedDriver blinkblinkboy;
+    //private RevBlinkinLedDriver blinkblinkboy;
 
     double angle;
     public static int diagonalDistance;
@@ -124,13 +124,12 @@ public class ThreePowerShot extends LinearOpMode {
 
         Wobbler = hardwareMap.dcMotor.get("Wobbler");
 
-        blinkblinkboy = hardwareMap.get(RevBlinkinLedDriver.class, "blinkblinkboy");
+        //blinkblinkboy = hardwareMap.get(RevBlinkinLedDriver.class, "blinkblinkboy");
 
         WobbleClamper = hardwareMap.servo.get("WobbleClamper");
 
         /* DISTANCE SENSORS */
         RightDistance = hardwareMap.get(DistanceSensor.class, "RightDistance");
-        BackDistance = hardwareMap.get(DistanceSensor.class, "BackDistance");
         FrontDistance = hardwareMap.get(DistanceSensor.class, "FrontDistance");
         LeftDistance = hardwareMap.get(DistanceSensor.class, "LeftDistance");
 
@@ -207,21 +206,7 @@ public class ThreePowerShot extends LinearOpMode {
                 position = 1;
 
             }
-/*
-            if(BackDistance.getDistance(DistanceUnit.INCH) > 10 || LeftDistance.getDistance(DistanceUnit.INCH) > 150 || RightDistance.getDistance(DistanceUnit.INCH) > 150){
-                blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.STROBE_RED);
-            } else {
-                blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.RAINBOW_RAINBOW_PALETTE);
-            }
 
-            if (!checkFrontDist){
-                blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.STROBE_WHITE);
-            } else if(FrontDistance.getDistance(DistanceUnit.INCH) < 10){
-                blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.RAINBOW_RAINBOW_PALETTE);
-                checkFrontDist = true;
-                telemetry.addLine("IS BEING CHECKED");
-            }
-*/
             telemetry.addData("Value", pipeline.getAnalysis());
             telemetry.addData("checkFrontDist", checkFrontDist);
             telemetry.addData("ringConfig", pipeline.configuration);
@@ -232,7 +217,6 @@ public class ThreePowerShot extends LinearOpMode {
             telemetry.addData("encodersToDrop", encodersToDrop);
             telemetry.addData("angleToDrop", angleToDrop);
             telemetry.addData("FrontDistance", FrontDistance.getDistance(DistanceUnit.INCH));
-            telemetry.addData("BackDistance", BackDistance.getDistance(DistanceUnit.INCH));
             telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
             telemetry.addData("LeftDistance", LeftDistance.getDistance(DistanceUnit.INCH));
             telemetry.addData("Time Elapsed", runtime);
@@ -986,10 +970,10 @@ public class ThreePowerShot extends LinearOpMode {
         /*
          * The core values which define the location and size of the sample regions
          */
-        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(330,90);
+        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(330,133);
 
         static final int REGION_WIDTH = 95;
-        static final int REGION_HEIGHT = 70;
+        static final int REGION_HEIGHT = 77;
 
         final int FOUR_RING_THRESHOLD = 140;
         final int ONE_RING_THRESHOLD = 134;
