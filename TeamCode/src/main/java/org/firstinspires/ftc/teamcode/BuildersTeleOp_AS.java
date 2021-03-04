@@ -353,7 +353,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
       }
 */
 
-                if (ringDistance < 3){
+                if (ringDistance < 2.4){
 
                     blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.WHITE);
 
@@ -407,6 +407,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
 
 
     }
+
 
 
   /*  public void align(double power) {

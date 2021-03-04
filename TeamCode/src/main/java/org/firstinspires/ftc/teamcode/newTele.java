@@ -140,8 +140,6 @@ public class newTele extends LinearOpMode {
         LeftForward.setPower(0);
         LeftBack.setPower(0);
 
-
-
         WobbleClamper.setPosition(0);
         telemetry.addData(">", "INIT DONE");
 // RESET TIME
@@ -319,9 +317,9 @@ public class newTele extends LinearOpMode {
                     Shooter.setPower(0);
                 }
 
-                if (gamepad2.left_bumper) { //OUT
+                if (gamepad2.right_bumper) { //OUT
                     WobbleClamper.setPosition(0.7);
-                } else if (gamepad2.right_bumper) { //IN
+                } else if (gamepad2.left_bumper) { //IN
                     WobbleClamper.setPosition(1);
                 }
 

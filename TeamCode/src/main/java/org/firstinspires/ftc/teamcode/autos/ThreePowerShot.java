@@ -929,6 +929,7 @@ public class ThreePowerShot extends LinearOpMode {
         openWobbleClamper();
     }
 
+
     public void liftWobbleGoal(int encoders) {
         Wobbler.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
