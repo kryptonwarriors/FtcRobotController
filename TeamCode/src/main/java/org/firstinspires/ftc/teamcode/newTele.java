@@ -310,7 +310,8 @@ public class newTele extends LinearOpMode {
                 }
 
                 if (gamepad2.dpad_up) {
-                    Shooter.setPower(0.54);
+                    //Shooter.setPower(0.54);
+                    Shooter.setPower(0.65);
                 } else if (gamepad2.dpad_down) {
                     Shooter.setPower(0.5);
                 } else {
