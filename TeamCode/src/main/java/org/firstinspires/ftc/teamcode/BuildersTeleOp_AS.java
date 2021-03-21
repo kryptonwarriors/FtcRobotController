@@ -95,9 +95,9 @@ public class BuildersTeleOp_AS extends LinearOpMode {
         Wobbler = hardwareMap.dcMotor.get("Wobbler");
 
         RightDistance = hardwareMap.get(DistanceSensor.class, "RightDistance");
-        BackDistance = hardwareMap.get(DistanceSensor.class, "BackDistance");
+        //BackDistance = hardwareMap.get(DistanceSensor.class, "BackDistance");
         FrontDistance = hardwareMap.get(DistanceSensor.class, "FrontDistance");
-        LeftDistance = hardwareMap.get(DistanceSensor.class, "LeftDistance");
+        //LeftDistance = hardwareMap.get(DistanceSensor.class, "LeftDistance");
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
@@ -388,7 +388,7 @@ public class BuildersTeleOp_AS extends LinearOpMode {
 
                 telemetry.addData("time", time);
                 telemetry.addData("WobbleTouch", WobbleTouch.getValue());
-                telemetry.addData("LeftDistance", LeftDistance.getDistance(DistanceUnit.INCH));
+               // telemetry.addData("LeftDistance", LeftDistance.getDistance(DistanceUnit.INCH));
                 telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
                 //telemetry.addData("BackDistance", BackDistance.getDistance(DistanceUnit.INCH));
                 telemetry.addData("FrontDistace", FrontDistance.getDistance(DistanceUnit.INCH));

@@ -86,6 +86,10 @@ public class ThreePowerShot extends LinearOpMode {
     int cForward = 15;
     int DISTANCELEFT = 16;
 
+    public static int xPos = 450;
+    public static int yPos = 163;
+
+
     boolean checkFrontDist = false;
 
     private VoltageSensor voltageSensor;
@@ -106,6 +110,7 @@ public class ThreePowerShot extends LinearOpMode {
     public static int encodersToDrop;
     public static int angleToDrop;
 
+    private int value;
 
     @Override
     public void runOpMode() throws InterruptedException{
@@ -131,15 +136,17 @@ public class ThreePowerShot extends LinearOpMode {
         /* DISTANCE SENSORS */
         RightDistance = hardwareMap.get(DistanceSensor.class, "RightDistance");
         FrontDistance = hardwareMap.get(DistanceSensor.class, "FrontDistance");
-        LeftDistance = hardwareMap.get(DistanceSensor.class, "LeftDistance");
 
         WobbleTouch = hardwareMap.get(TouchSensor.class, "WobbleTouch");
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
         /* MODE SWITCHES */
-        RightForward.setDirection(DcMotor.Direction.REVERSE);
         LeftBack.setDirection(DcMotor.Direction.REVERSE);
+        LeftForward.setDirection(DcMotor.Direction.REVERSE);
+
+        Shooter.setDirection(DcMotor.Direction.REVERSE);
+
 
         RightForward.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         RightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -172,6 +179,7 @@ public class ThreePowerShot extends LinearOpMode {
 
         initialVoltage = voltageSensor.getVoltage();
 
+
         //Initialization
         while (!(isStopRequested() || isStarted())) {
 
@@ -199,7 +207,7 @@ public class ThreePowerShot extends LinearOpMode {
             } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.A){
 
                 encodersToDrop = 550;
-                angleToDrop = -88;
+                angleToDrop = -74;
                 diagonalDistance = 15;
                 secondWobbleGoalDistance = 52;
                 secondWobbleEncoderDistance = 100;
@@ -207,7 +215,10 @@ public class ThreePowerShot extends LinearOpMode {
 
             }
 
-            telemetry.addData("Value", pipeline.getAnalysis());
+            value = pipeline.getAnalysis();
+
+
+            telemetry.addData("Value", value);
             telemetry.addData("checkFrontDist", checkFrontDist);
             telemetry.addData("ringConfig", pipeline.configuration);
             telemetry.addData("parrallelEncoder", LeftForward.getCurrentPosition());
@@ -218,7 +229,6 @@ public class ThreePowerShot extends LinearOpMode {
             telemetry.addData("angleToDrop", angleToDrop);
             telemetry.addData("FrontDistance", FrontDistance.getDistance(DistanceUnit.INCH));
             telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
-            telemetry.addData("LeftDistance", LeftDistance.getDistance(DistanceUnit.INCH));
             telemetry.addData("Time Elapsed", runtime);
             telemetry.addLine( ">>>INITIALIZATION COMPLETED");
             telemetry.update();
@@ -228,13 +238,16 @@ public class ThreePowerShot extends LinearOpMode {
 
         if (opModeIsActive() && !isStopRequested()) {
 
-            strafe = new PIDController(0.0016367, 0.00016367, 0.000016367);
+            xPos = 280;
+            yPos = 325;
+
+            strafe = new PIDController(0.0016367*1.5, 0.00016367, 0.000016367);
             strafe.setSetpoint(0);
             strafe.setOutputRange(0, 0.75);
             strafe.setInputRange(-90, 90);
             strafe.enable();
 
-            drive = new PIDController(0.016367, 0.00016367*5, 0.000016367*3);
+            drive = new PIDController(0.016367, 0.00016367*5, 0.000016367*6);
             drive.setSetpoint(0);
             drive.setOutputRange(0, 0.75);
             drive.setInputRange(-90, 90);
@@ -253,7 +266,7 @@ public class ThreePowerShot extends LinearOpMode {
             diagonal.setInputRange(-90, 90);
             diagonal.enable();
 
-            leftStrafe = new PIDController(0.0016367*1.5, 0.00016367, 0.000016367);
+            leftStrafe = new PIDController(0.0016367*2.5, 0.00016367, 0.000016367);
             leftStrafe.setSetpoint(0);
             leftStrafe.setOutputRange(0, 0.75);
             leftStrafe.setInputRange(-90, 90);
@@ -265,14 +278,59 @@ public class ThreePowerShot extends LinearOpMode {
             cDrive.setInputRange(-90, 90);
             cDrive.enable();
 
-//GO TO POWERSHOTS
-            moveEncoders(Forward, 0.6, 1240, 0);
 
-            sleep(400);
 
-            imuTurn(RTURN, 0.2, 1);
+            while (value < 140) {
+
+                value = pipeline.getAnalysis();
+
+                RightForward.setPower(0.2);
+                RightBack.setPower(0.2);
+                LeftForward.setPower(-0.2);
+                LeftBack.setPower(-0.2);
+
+                telemetry.addData("Values", value);
+                telemetry.update();
+
+            }
+
+            RightForward.setPower(0);
+            RightBack.setPower(0);
+            LeftForward.setPower(0);
+            LeftBack.setPower(0);
+
+
+            telemetry.addData("Values", value);
+            telemetry.update();
+
+            sleep(100);
+
+            moveDistance(FORWARD, 0.3, 29.5, -87, 3);
 
             sleep(200);
+
+            closeWobbleClamper();
+
+            sleep(1000000);
+
+/*
+            imuTurn(RTURN, 0.4, -74);
+
+            sleep(2000);
+
+            moveEncoders(FORWARD_WITH_ARM, 0.6, 550, -90);
+
+            sleep(2000);
+
+            moveDistance(RIGHT, 0.65, 22, -90, 5);
+
+            sleep(100000000);
+            */
+
+//GO TO POWERSHOTS
+            moveEncoders(Forward, 0.6, 1700, 0);
+
+            sleep(400);
 
             powershot();
 
@@ -313,7 +371,7 @@ public class ThreePowerShot extends LinearOpMode {
 
                 sleep(50);
 
-                moveDistance(RIGHT, 0.4, 16.21 + .1220, -90, 20);
+                moveDistance(RIGHT, 0.4, 16.21 + .1220, -90,3);
 
                 sleep(100);
 
@@ -331,7 +389,7 @@ public class ThreePowerShot extends LinearOpMode {
 
                 sleep(300);
 
-                liftWobbleGoal(1400);
+                liftWobbleGoal(400);
 
                 moveDistance(FORWARD, 0.3, 13, -90,5);
 
@@ -347,7 +405,11 @@ public class ThreePowerShot extends LinearOpMode {
 
                 sleep(10);
 
-                dropWobbleGoal();
+                //dropWobbleGoal();
+
+                openWobbleClamper();
+
+                sleep(50);
 
                 moveEncoders(BACKWARD, 0.7, 700, 0);
 
@@ -356,7 +418,6 @@ public class ThreePowerShot extends LinearOpMode {
                 sleep(200);
 
                 //BACKWARD
-
 
                 moveEncoders(BACKWARD, 0.5, 100, angleToDrop);
 
@@ -368,7 +429,7 @@ public class ThreePowerShot extends LinearOpMode {
 
                 sleep(50);
 
-                moveDistance(RIGHT, 0.4, 8 + .1220, -90, 6);
+                moveDistance(RIGHT, 0.4, 13, -90, 6);
 
                 sleep(100);
 
@@ -379,7 +440,7 @@ public class ThreePowerShot extends LinearOpMode {
 
                 sleep(100);
 
-                moveDistance(FORWARD, 0.25, 31, -90, 4);
+                moveDistance(FORWARD, 0.25, 29, -90, 4);
 
                 sleep(200);
 
@@ -387,7 +448,7 @@ public class ThreePowerShot extends LinearOpMode {
 
                 sleep(300);
 
-                liftWobbleGoal(1400);
+                liftWobbleGoal(400);
 
                 sleep(200);
 
@@ -401,7 +462,9 @@ public class ThreePowerShot extends LinearOpMode {
 
                 moveEncoders(Forward, 0.5, 60, -90);
 
-                dropWobbleGoal();
+                //dropWobbleGoal();
+
+                openWobbleClamper();
 
                 sleep(50);
 
@@ -415,37 +478,65 @@ public class ThreePowerShot extends LinearOpMode {
             }
             else if (position == 1) {
 
-                moveEncoders(BACKWARD, 0.4, 400, -90);
+                moveEncoders(BACKWARD, 0.4, 300, -90);
 
 
                 sleep(100);
 
                 if (initialVoltage > 13) {
-                    moveDistance(RIGHT, 0.58, 19, -90, 5);
+                    moveDistance(RIGHT, 0.65, 23, -87, 2);
                 } else {
-                    moveDistance(RIGHT, 0.64, 19, -90, 5);
+                    moveDistance(RIGHT, 0.65, 20, -87, 2);
                 }
-                sleep(50);
-
-                moveDistance(FORWARD, 0.3, 29.5, -90, 5);
 
                 sleep(600);
+
+                while (value < 140) {
+
+                    value = pipeline.getAnalysis();
+
+                    RightForward.setPower(0.2);
+                    RightBack.setPower(0.2);
+                    LeftForward.setPower(-0.2);
+                    LeftBack.setPower(-0.2);
+
+                    telemetry.addData("Values", value);
+                    telemetry.update();
+
+                }
+
+                RightForward.setPower(0);
+                RightBack.setPower(0);
+                LeftForward.setPower(0);
+                LeftBack.setPower(0);
+
+
+                telemetry.addData("Values", value);
+                telemetry.update();
+
+                sleep(100);
+
+                moveDistance(FORWARD, 0.3, 29.5, -87, 3);
+
+                sleep(200);
 
                 closeWobbleClamper();
 
                 sleep(500);
 
-                liftWobbleGoal(1400);
+                liftWobbleGoal(400);
 
                 moveEncoders(LEFT, 0.7, 2110, -90);
 
                 sleep(50);
 
-                dropWobbleGoal();
+                //dropWobbleGoal();
+
+                openWobbleClamper();
 
                 sleep(50);
 
-                liftWobbleGoal(2000);
+                liftWobbleGoal(900);
 
                 sleep(50);
 
@@ -546,7 +637,7 @@ public class ThreePowerShot extends LinearOpMode {
         } else if (Direction == FORWARD) {
             LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-            while (opModeIsActive() && !isStopRequested() && FrontDistance.getDistance(DistanceUnit.INCH) >= Distance &&  time < failSafeTime) {
+            while (opModeIsActive() && !isStopRequested() && FrontDistance.getDistance(DistanceUnit.INCH) >= Distance &&  (failSafeTime > 0 && time < failSafeTime)) {
 
                 correction = backDrive.performPID(getAngle() - desiredAngle);
 
@@ -704,7 +795,7 @@ public class ThreePowerShot extends LinearOpMode {
 
             LeftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            Wobbler.setPower(-1);
+            Wobbler.setPower(-0.7);
 
             while (!isStopRequested() && Math.abs(LeftBack.getCurrentPosition()) <= Math.abs(LeftBack.getTargetPosition()) ) {
 
@@ -759,11 +850,11 @@ public class ThreePowerShot extends LinearOpMode {
 
 
     public void closeWobbleClamper() {
-        WobbleClamper.setPosition(1);
+        WobbleClamper.setPosition(0.8);
     }
 
     public void openWobbleClamper () {
-        WobbleClamper.setPosition(0.7);
+        WobbleClamper.setPosition(0.5);
     }
 
 
@@ -874,7 +965,7 @@ public class ThreePowerShot extends LinearOpMode {
             else if (i == 1)
                 Conveyor.setTargetPosition(650);
             else if (i == 2)
-                Conveyor.setTargetPosition(1000);
+                Conveyor.setTargetPosition(1500);
 
 
             Conveyor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -894,11 +985,11 @@ public class ThreePowerShot extends LinearOpMode {
 
             if(i == 0){
 
-                imuTurn(LTURN, 0.2, 4.5);
+                imuTurn(LTURN, 0.2, 10.75);
 
             } else if(i == 1){
 
-                imuTurn(LTURN, 0.2, 10.75);
+                imuTurn(LTURN, 0.2, 14.75);
             }
             sleep(400);
 
@@ -914,18 +1005,15 @@ public class ThreePowerShot extends LinearOpMode {
         Wobbler.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
 
-        Wobbler.setTargetPosition(-2000);
+        Wobbler.setPower(-1);
 
-        Wobbler.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        Wobbler.setPower(1);
-
-        while (opModeIsActive() && !WobbleTouch.isPressed()) {
+        while (!isStopRequested() && opModeIsActive() && !WobbleTouch.isPressed()) {
             telemetry.addData("Dropping", "Right Now");
             telemetry.update();
         }
 
         Wobbler.setPower(0);
+
         openWobbleClamper();
     }
 
@@ -971,7 +1059,7 @@ public class ThreePowerShot extends LinearOpMode {
         /*
          * The core values which define the location and size of the sample regions
          */
-        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(330,133);
+        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(xPos,yPos);
 
         static final int REGION_WIDTH = 95;
         static final int REGION_HEIGHT = 77;

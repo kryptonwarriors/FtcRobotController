@@ -32,7 +32,7 @@ import org.firstinspires.ftc.teamcode.util.PIDController;
 public class newTele extends LinearOpMode {
 
     private DcMotor RightForward, RightBack, LeftForward, LeftBack, Intake, Shooter, Conveyor, Wobbler;
-    private Servo WobbleClamper, RingClamper;
+    private Servo WobbleClamper, Hopper;
     private DistanceSensor BackDistance, RightDistance, FrontDistance, LeftDistance;
     private ElapsedTime runtime = new ElapsedTime();
     private double Multiplier = 0.7;
@@ -99,11 +99,11 @@ public class newTele extends LinearOpMode {
         RightDistance = hardwareMap.get(DistanceSensor.class, "RightDistance");
         //BackDistance = hardwareMap.get(DistanceSensor.class, "BackDistance");
         FrontDistance = hardwareMap.get(DistanceSensor.class, "FrontDistance");
-        LeftDistance = hardwareMap.get(DistanceSensor.class, "LeftDistance");
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
         WobbleClamper = hardwareMap.servo.get("WobbleClamper");
+        Hopper = hardwareMap.servo.get("Hopper");
     /*
     Ringer = hardwareMap.dcMotor.get("Ringer");
     RingClamper = hardwareMap.servo.get("RingClamper");
@@ -140,7 +140,7 @@ public class newTele extends LinearOpMode {
         LeftForward.setPower(0);
         LeftBack.setPower(0);
 
-        WobbleClamper.setPosition(0);
+        WobbleClamper.setPosition(0.2);
         telemetry.addData(">", "INIT DONE");
 // RESET TIME
         runtime.reset();
@@ -170,6 +170,12 @@ public class newTele extends LinearOpMode {
 */
                 if(gamepad1.b){
                     resetStartTime();
+                }
+
+                if(Shooter.getPower() > 0){
+                    Hopper.setPosition(1);
+                } else {
+                    Hopper.setPosition(0);
                 }
 
                 if (gamepad1.right_trigger > 0.01) {
@@ -255,12 +261,12 @@ public class newTele extends LinearOpMode {
 
                     //POWERSHOT SHOOTING
 
-                    if (LeftDistance.getDistance(DistanceUnit.INCH) > 24) {
+                   /* if (LeftDistance.getDistance(DistanceUnit.INCH) > 24) {
                         moveDistance(LEFT, 0.5, 24);
                     } else {
                         moveDistance(RIGHT, 0.5, 19);
                     }
-
+*/
                     sleep(100);
 
                     if (voltageSensor.getVoltage() > 13.1) {
@@ -319,9 +325,9 @@ public class newTele extends LinearOpMode {
                 }
 
                 if (gamepad2.right_bumper) { //OUT
-                    WobbleClamper.setPosition(0.7);
+                    WobbleClamper.setPosition(0.2);
                 } else if (gamepad2.left_bumper) { //IN
-                    WobbleClamper.setPosition(1);
+                    WobbleClamper.setPosition(0.8);
                 }
 
                 telemetry.addData("Conveyor + Intake", Conveyor.getPower());
@@ -372,7 +378,6 @@ public class newTele extends LinearOpMode {
 
                 telemetry.addData("time", time);
                 telemetry.addData("WobbleTouch", WobbleTouch.getValue());
-                telemetry.addData("LeftDistance", LeftDistance.getDistance(DistanceUnit.INCH));
                 telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
                 //telemetry.addData("BackDistance", BackDistance.getDistance(DistanceUnit.INCH));
                 telemetry.addData("FrontDistace", FrontDistance.getDistance(DistanceUnit.INCH));

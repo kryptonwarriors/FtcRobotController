@@ -58,8 +58,8 @@ import static org.firstinspires.ftc.teamcode.drive.TwoWheelTrackingLocalizer.WHE
 import static org.opencv.imgproc.Imgproc.moments;
 
 
-@TeleOp(name = "colorReact", group = "tests")
-public class colorReact extends LinearOpMode {
+@TeleOp(name = "wobbleDetection", group = "tests")
+public class wobbleDetection extends LinearOpMode {
 
 
     private DcMotor RightForward, LeftForward, RightBack, LeftBack;
@@ -83,17 +83,16 @@ public class colorReact extends LinearOpMode {
     private final int rows = 640;
     private final int cols = 480;
 
-
     //red - 185
     //blue - 118
     private static final int threshold = 180;
 
-
+    private static int value;
 
     OpenCvCamera webcam;
 
     StageSwitchingPipeline pipeline;
-    
+
     @Override
     public void runOpMode() throws InterruptedException{
 
@@ -105,160 +104,158 @@ public class colorReact extends LinearOpMode {
 
         LeftBack.setDirection(DcMotor.Direction.REVERSE);
         LeftForward.setDirection(DcMotor.Direction.REVERSE);
+/*
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        webcam = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
+*/
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(
                 hardwareMap.get(WebcamName.class, "Webcam 1"),
                 cameraMonitorViewId);
+
+
         webcam.openCameraDevice();//open camera
         pipeline = new StageSwitchingPipeline();
         webcam.setPipeline(pipeline);//different stages
         webcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
 
         telemetry.addLine("Waiting for start");
-        telemetry.update();
 
-        waitForStart();
-
-
-        while (opModeIsActive() && !isStopRequested()) {
-
+        while(!isStopRequested() && !isStarted()){
+            telemetry.addData("Value", pipeline.getAnalysis());
+            telemetry.update();
+        }
 
 
-            while (valMid < 180) {
+        if (opModeIsActive() && !isStopRequested()) {
+
+
+
+            while (value < 145) {
+
+                value = pipeline.getAnalysis();
 
                 RightForward.setPower(0.2);
                 RightBack.setPower(0.2);
                 LeftForward.setPower(-0.2);
                 LeftBack.setPower(-0.2);
 
-                telemetry.addData("Values", valLeft + "   " + valMid + "   " + valRight);
+                telemetry.addData("Values", value);
                 telemetry.update();
 
             }
-            while(valMid > 180) {
 
                 RightForward.setPower(0);
                 RightBack.setPower(0);
                 LeftForward.setPower(0);
                 LeftBack.setPower(0);
-            }
 
+
+            telemetry.addData("Values", value);
+            telemetry.update();
 
 
 
         }
 
     }
+    public static class StageSwitchingPipeline extends OpenCvPipeline
+    {
 
-    static class StageSwitchingPipeline extends OpenCvPipeline {
-        Mat yCbCrChan2Mat = new Mat();
-        Mat thresholdMat = new Mat();
-        Mat all = new Mat();
-        List<MatOfPoint> contoursList = new ArrayList<>();
-
-        enum Stage {//color difference. greyscale
-            detection,//includes outlines
-            THRESHOLD,//b&w
-            RAW_IMAGE,//displays raw view
-        }
-
-        enum wobbleState {
+        public enum wobbleState {
             detected, notPresent
         }
 
-        private Stage stageToRenderToViewport = Stage.detection;
-        private Stage[] stages = Stage.values();
+        /*
+         * Some color constants
+         */
 
+        static final Scalar BLACK = new Scalar(0, 0, 0);
+        static final Scalar ORANGE = new Scalar(255, 110, 2);
 
-        @Override
-        public void onViewportTapped() {
-            /*
-             * Note that this method is invoked from the UI thread
-             * so whatever we do here, we must do quickly.
-             */
+        /*
+         * The core values which define the location and size of the sample regions
+         */
+        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(330,325);
 
-            int currentStageNum = stageToRenderToViewport.ordinal();
+        static final int REGION_WIDTH = 95;
+        static final int REGION_HEIGHT = 90;
 
-            int nextStageNum = currentStageNum + 1;
+        final int FOUR_RING_THRESHOLD = 140;
+        final int ONE_RING_THRESHOLD = 134;
 
-            if (nextStageNum >= stages.length) {
-                nextStageNum = 0;
-            }
+        Point region1_pointA = new Point(
+                REGION1_TOPLEFT_ANCHOR_POINT.x,
+                REGION1_TOPLEFT_ANCHOR_POINT.y);
+        Point region1_pointB = new Point(
+                REGION1_TOPLEFT_ANCHOR_POINT.x + REGION_WIDTH,
+                REGION1_TOPLEFT_ANCHOR_POINT.y + REGION_HEIGHT);
 
-            stageToRenderToViewport = stages[nextStageNum];
+        /*
+         * Working variables
+         */
+        Mat region1_Cr;
+        Mat YCrCb = new Mat();
+        Mat Cr = new Mat();
+        int avg1;
+
+        // Volatile since accessed by OpMode thread w/o synchronization
+        public volatile StageSwitchingPipeline.wobbleState presence = StageSwitchingPipeline.wobbleState.notPresent;
+        /*
+         * This function takes the RGB frame, converts to YCrCb,
+         * and extracts the Cb channel to the 'Cb' variable
+         */
+        void inputToCr(Mat input)
+        {
+            Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
+            Core.extractChannel(YCrCb, Cr, 1);
         }
 
-
         @Override
-        public Mat processFrame(Mat input) {
-            contoursList.clear();
+        public void init(Mat firstFrame)
+        {
+            inputToCr(firstFrame);
 
-            //color diff cr.
-            //lower cb = more blue = skystone = white
-            //higher cb = less blue = yellow stone = grey
-            Imgproc.cvtColor(input, yCbCrChan2Mat, Imgproc.COLOR_RGB2YCrCb);//converts rgb to ycrcb
-            Core.extractChannel(yCbCrChan2Mat, yCbCrChan2Mat, 1);//takes cr difference and stores (coi is channel of interest)
-                                                                     //0 = Y, 1 = Cr, 2 = Cb
-
-            //b&w (thresholding to make a map of the desired color
-            Imgproc.threshold(yCbCrChan2Mat, thresholdMat, threshold, 255, Imgproc.THRESH_BINARY);
-
-            //outline/contour
-            Imgproc.findContours(thresholdMat, contoursList, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
-            yCbCrChan2Mat.copyTo(all);//copies mat object
-            Imgproc.drawContours(all, contoursList, -1, new Scalar(255, 0, 0), 4, 8);//draws blue contours
-
-            Mat eroder= Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size( 3, 3));
-
-            Mat dilator = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(8,8));
-
-
-            Imgproc.erode(thresholdMat, thresholdMat, eroder);
-            Imgproc.erode(thresholdMat, thresholdMat, eroder);
-
-            Imgproc.dilate(thresholdMat, thresholdMat, dilator);
-            Imgproc.dilate(thresholdMat, thresholdMat, dilator);
-
-            //get values from frame
-            double[] pixMid = yCbCrChan2Mat.get((int) (input.rows() * midPos[1]), (int) (input.cols() * midPos[0]));//gets value at circle
-            valMid = (int) pixMid[0];
-
-            //create three points
-            Point pointMid = new Point((int) (input.cols() * midPos[0]), (int) (input.rows() * midPos[1]));
-
-            //draw circles on those points
-            Imgproc.circle(all, pointMid, 5, new Scalar(255, 0, 0), 1);//draws circle
-
-            Imgproc.rectangle(//3-5
-                    all,
-                    new Point(
-                            input.cols() * (midPos[0] - rectWidth / 1.5),
-                            input.rows() * (midPos[1] - rectHeight / .7)),
-                    new Point(
-                            input.cols() * (midPos[0] + rectWidth / 1.5),
-                            input.rows() * (midPos[1] + rectHeight / .7)),
-                    new Scalar(0, 255, 0), 3);
-
-            switch (stageToRenderToViewport) {
-                case THRESHOLD: {
-                    return thresholdMat;
-                }
-
-                case detection: {
-                    return all;
-                }
-
-                case RAW_IMAGE: {
-                    return input;
-                }
-
-                default: {
-                    return input;
-                }
-            }
+            region1_Cr = Cr.submat(new Rect(region1_pointA, region1_pointB));
         }
 
+        @Override
+        public Mat processFrame(Mat input)
+        {
+            inputToCr(input);
+
+            avg1 = (int) Core.mean(region1_Cr).val[0];
+
+            Imgproc.rectangle(
+                    input, // Buffer to draw on
+                    region1_pointA, // First point which defines the rectangle
+                    region1_pointB, // Second point which defines the rectangle
+                    BLACK, // The color the rectangle is drawn in
+                    2); // Thickness of the rectangle lines
+
+            presence = wobbleState.notPresent; // Record our configuration
+
+            if(avg1 > FOUR_RING_THRESHOLD){
+                presence = wobbleState.detected;
+            }else{
+                presence = wobbleState.notPresent;
+            }
+
+            Imgproc.rectangle(
+                    input, // Buffer to draw on
+                    region1_pointA, // First point which defines the rectangle
+                    region1_pointB, // Second point which defines the rectangle
+                    ORANGE, // The color the rectangle is drawn in
+                    5);
+
+            return input;
+        }
+
+        public int getAnalysis()
+        {
+            return avg1;
+        }
     }
 
 }
