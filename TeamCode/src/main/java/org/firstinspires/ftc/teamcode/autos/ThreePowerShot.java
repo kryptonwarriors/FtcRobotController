@@ -206,7 +206,7 @@ public class ThreePowerShot extends LinearOpMode {
 
             } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.A){
 
-                encodersToDrop = 550;
+                encodersToDrop = 600;
                 angleToDrop = -74;
                 diagonalDistance = 15;
                 secondWobbleGoalDistance = 52;
@@ -279,7 +279,7 @@ public class ThreePowerShot extends LinearOpMode {
             cDrive.enable();
 
 
-
+/*
             while (value < 140) {
 
                 value = pipeline.getAnalysis();
@@ -312,7 +312,7 @@ public class ThreePowerShot extends LinearOpMode {
             closeWobbleClamper();
 
             sleep(1000000);
-
+*/
 /*
             imuTurn(RTURN, 0.4, -74);
 
@@ -482,16 +482,30 @@ public class ThreePowerShot extends LinearOpMode {
 
 
                 sleep(100);
-
+/*
                 if (initialVoltage > 13) {
-                    moveDistance(RIGHT, 0.65, 23, -87, 2);
-                } else {
                     moveDistance(RIGHT, 0.65, 20, -87, 2);
+                } else {
+                        moveDistance(RIGHT, 0.65, 17, -87, 2);
                 }
+*/
+                moveEncoders(RIGHT, 0.4, 1900, -90);
+
+                while (!isStopRequested() && value > 140) {
+                    RightForward.setPower(-0.2);
+                    RightBack.setPower(0.2);
+                    LeftForward.setPower(0.2);
+                    LeftBack.setPower(-0.2);
+                }
+
+                RightForward.setPower(0);
+                RightBack.setPower(0);
+                LeftForward.setPower(0);
+                LeftBack.setPower(0);
 
                 sleep(600);
 
-                while (value < 140) {
+                /*while (!isStopRequested() && value < 140) {
 
                     value = pipeline.getAnalysis();
 
@@ -540,7 +554,7 @@ public class ThreePowerShot extends LinearOpMode {
 
                 sleep(50);
 
-                moveEncoders(BACKWARD, 0.7, 100, -90);
+                moveEncoders(BACKWARD, 0.7, 100, -90);*/
 
 
             }
