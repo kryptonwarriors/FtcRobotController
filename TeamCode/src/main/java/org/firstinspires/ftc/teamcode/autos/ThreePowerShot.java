@@ -89,6 +89,9 @@ public class ThreePowerShot extends LinearOpMode {
     public static int xPos = 450;
     public static int yPos = 163;
 
+    public static int width = 95;
+    public static int height = 77;
+
 
     boolean checkFrontDist = false;
 
@@ -238,8 +241,11 @@ public class ThreePowerShot extends LinearOpMode {
 
         if (opModeIsActive() && !isStopRequested()) {
 
-            xPos = 280;
-            yPos = 325;
+            xPos = 395;
+            yPos = 350;
+            width = 118;
+            height = 130;
+
 
             strafe = new PIDController(0.0016367*1.5, 0.00016367, 0.000016367);
             strafe.setSetpoint(0);
@@ -249,7 +255,7 @@ public class ThreePowerShot extends LinearOpMode {
 
             drive = new PIDController(0.016367, 0.00016367*5, 0.000016367*6);
             drive.setSetpoint(0);
-            drive.setOutputRange(0, 0.75);
+            drive.setOutputRange(0, 0.5);
             drive.setInputRange(-90, 90);
             drive.enable();
 
@@ -279,18 +285,63 @@ public class ThreePowerShot extends LinearOpMode {
             cDrive.enable();
 
 
-/*
-            while (value < 140) {
+            /*moveDistance(RIGHT, 0.7, 30, 0, 3);
+
+            while(value > 130 && !isStopRequested()){
+                value = pipeline.getAnalysis();
+
+                telemetry.addData("Values", value);
+                telemetry.addLine("WAITING");
+                telemetry.update();
+
+            }
+
+            sleep(100);
+
+            RightForward.setPower(-0.3);
+            RightBack.setPower(-0.3);
+            LeftForward.setPower(0.3);
+            LeftBack.setPower(0.3);
+
+            while (value < 135 && !isStopRequested()) {
 
                 value = pipeline.getAnalysis();
 
-                RightForward.setPower(0.2);
-                RightBack.setPower(0.2);
-                LeftForward.setPower(-0.2);
-                LeftBack.setPower(-0.2);
-
                 telemetry.addData("Values", value);
+                telemetry.addLine("TRYING TO TURN");
                 telemetry.update();
+
+            }
+
+            telemetry.addLine("Aman is fat");
+            telemetry.update();
+
+            RightForward.setPower(0);
+            RightBack.setPower(0);
+            LeftForward.setPower(0);
+            LeftBack.setPower(0);
+
+            sleep(100000);
+
+/*
+            imuTurn(RTURN, 0.4, -74);
+
+            sleep(1000);
+
+            moveEncoders(RIGHT, 0.4, 1600, -90);
+
+            LeftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+            while (!isStopRequested() && value < 140) {
+
+                correction = drive.performPID(getAngle() + 90);
+
+                LeftForward.setPower(0.4 - correction);
+                LeftBack.setPower(-0.4 - correction);
+                RightForward.setPower(-0.4 + correction);
+                RightBack.setPower(0.4 + correction);
 
             }
 
@@ -299,38 +350,29 @@ public class ThreePowerShot extends LinearOpMode {
             LeftForward.setPower(0);
             LeftBack.setPower(0);
 
+            sleep(600);
 
-            telemetry.addData("Values", value);
-            telemetry.update();
+            while (!isStopRequested() && value < 175) {
+                RightForward.setPower(0.23);
+                RightBack.setPower(0.23);
+                LeftForward.setPower(0.23);
+                LeftBack.setPower(0.23);
+            }
 
-            sleep(100);
-
-            moveDistance(FORWARD, 0.3, 29.5, -87, 3);
-
-            sleep(200);
-
-            closeWobbleClamper();
-
+            RightForward.setPower(0);
+            RightBack.setPower(0);
+            LeftForward.setPower(0);
+            LeftBack.setPower(0);
             sleep(1000000);
-*/
-/*
-            imuTurn(RTURN, 0.4, -74);
 
-            sleep(2000);
-
-            moveEncoders(FORWARD_WITH_ARM, 0.6, 550, -90);
-
-            sleep(2000);
-
-            moveDistance(RIGHT, 0.65, 22, -90, 5);
-
-            sleep(100000000);
-            */
+             */
 
 //GO TO POWERSHOTS
             moveEncoders(Forward, 0.6, 1700, 0);
 
             sleep(400);
+
+            imuTurn(RTURN, 0.23, 3);
 
             powershot();
 
@@ -479,58 +521,56 @@ public class ThreePowerShot extends LinearOpMode {
             else if (position == 1) {
 
                 moveEncoders(BACKWARD, 0.4, 300, -90);
-
-
-                sleep(100);
 /*
                 if (initialVoltage > 13) {
                     moveDistance(RIGHT, 0.65, 20, -87, 2);
                 } else {
                         moveDistance(RIGHT, 0.65, 17, -87, 2);
                 }
+
 */
-                moveEncoders(RIGHT, 0.4, 1900, -90);
 
-                while (!isStopRequested() && value > 140) {
-                    RightForward.setPower(-0.2);
-                    RightBack.setPower(0.2);
-                    LeftForward.setPower(0.2);
-                    LeftBack.setPower(-0.2);
-                }
+                moveDistance(RIGHT, 0.7, 30, -90, 4);
 
-                RightForward.setPower(0);
-                RightBack.setPower(0);
-                LeftForward.setPower(0);
-                LeftBack.setPower(0);
+                sleep(200);
 
-                sleep(600);
-
-                /*while (!isStopRequested() && value < 140) {
-
+                while(value > 130 && !isStopRequested()){
                     value = pipeline.getAnalysis();
 
-                    RightForward.setPower(0.2);
-                    RightBack.setPower(0.2);
-                    LeftForward.setPower(-0.2);
-                    LeftBack.setPower(-0.2);
-
                     telemetry.addData("Values", value);
+                    telemetry.addLine("WAITING");
                     telemetry.update();
 
                 }
 
+                sleep(100);
+
+                RightForward.setPower(-0.3);
+                RightBack.setPower(-0.3);
+                LeftForward.setPower(0.3);
+                LeftBack.setPower(0.3);
+
+                while (value < 135 && !isStopRequested()) {
+
+                    value = pipeline.getAnalysis();
+
+                    telemetry.addData("Values", value);
+                    telemetry.addLine("TRYING TO TURN");
+                    telemetry.update();
+
+                }
+
+                telemetry.addLine("Aman is fat");
+                telemetry.update();
+
                 RightForward.setPower(0);
                 RightBack.setPower(0);
                 LeftForward.setPower(0);
                 LeftBack.setPower(0);
 
+                sleep(10000000);
 
-                telemetry.addData("Values", value);
-                telemetry.update();
-
-                sleep(100);
-
-                moveDistance(FORWARD, 0.3, 29.5, -87, 3);
+                moveDistance(FORWARD, 0.3, 32, -104, 3);
 
                 sleep(200);
 
@@ -540,7 +580,7 @@ public class ThreePowerShot extends LinearOpMode {
 
                 liftWobbleGoal(400);
 
-                moveEncoders(LEFT, 0.7, 2110, -90);
+                moveEncoders(LEFT, 0.7, 1610, -90);
 
                 sleep(50);
 
@@ -554,7 +594,7 @@ public class ThreePowerShot extends LinearOpMode {
 
                 sleep(50);
 
-                moveEncoders(BACKWARD, 0.7, 100, -90);*/
+                moveEncoders(BACKWARD, 0.7, 100, -90);
 
 
             }
@@ -868,7 +908,7 @@ public class ThreePowerShot extends LinearOpMode {
     }
 
     public void openWobbleClamper () {
-        WobbleClamper.setPosition(0.5);
+        WobbleClamper.setPosition(0.6);
     }
 
 
@@ -1112,9 +1152,11 @@ public class ThreePowerShot extends LinearOpMode {
         @Override
         public void init(Mat firstFrame)
         {
+
             inputToCb(firstFrame);
 
             region1_Cb = Cb.submat(new Rect(region1_pointA, region1_pointB));
+
         }
 
         @Override

@@ -128,18 +128,21 @@ public class wobbleDetection extends LinearOpMode {
         }
 
 
+
+
+
         if (opModeIsActive() && !isStopRequested()) {
 
 
 
-            while (value < 145) {
+            while (value < 130) {
 
                 value = pipeline.getAnalysis();
 
-                RightForward.setPower(0.2);
-                RightBack.setPower(0.2);
-                LeftForward.setPower(-0.2);
-                LeftBack.setPower(-0.2);
+                RightForward.setPower(-0.3);
+                RightBack.setPower(-0.3);
+                LeftForward.setPower(0.3);
+                LeftBack.setPower(0.3);
 
                 telemetry.addData("Values", value);
                 telemetry.update();
@@ -151,10 +154,8 @@ public class wobbleDetection extends LinearOpMode {
                 LeftForward.setPower(0);
                 LeftBack.setPower(0);
 
-
             telemetry.addData("Values", value);
             telemetry.update();
-
 
 
         }
@@ -177,10 +178,10 @@ public class wobbleDetection extends LinearOpMode {
         /*
          * The core values which define the location and size of the sample regions
          */
-        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(330,325);
+        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(394,350);
 
-        static final int REGION_WIDTH = 95;
-        static final int REGION_HEIGHT = 90;
+        static final int REGION_WIDTH = 118;
+        static final int REGION_HEIGHT = 130;
 
         final int FOUR_RING_THRESHOLD = 140;
         final int ONE_RING_THRESHOLD = 134;
