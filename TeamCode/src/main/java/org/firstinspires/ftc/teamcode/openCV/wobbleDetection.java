@@ -120,13 +120,17 @@ public class wobbleDetection extends LinearOpMode {
         webcam.setPipeline(pipeline);//different stages
         webcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
 
-        telemetry.addLine("Waiting for start");
+        telemetry.addLine("Waiting for change");
+        telemetry.update();
 
-        while(!isStopRequested() && !isStarted()){
+        sleep(1000);
+
+
+        /*while(!isStopRequested() && !isStarted()){
             telemetry.addData("Value", pipeline.getAnalysis());
             telemetry.update();
         }
-
+*/
 
 
 
@@ -134,29 +138,39 @@ public class wobbleDetection extends LinearOpMode {
         if (opModeIsActive() && !isStopRequested()) {
 
 
-
-            while (value < 130) {
-
+            while(value >= 135 && !isStopRequested()){
                 value = pipeline.getAnalysis();
 
-                RightForward.setPower(-0.3);
-                RightBack.setPower(-0.3);
-                LeftForward.setPower(0.3);
-                LeftBack.setPower(0.3);
-
                 telemetry.addData("Values", value);
+                telemetry.addLine("WAITING");
                 telemetry.update();
 
             }
 
-                RightForward.setPower(0);
-                RightBack.setPower(0);
-                LeftForward.setPower(0);
-                LeftBack.setPower(0);
+            sleep(2000);
 
-            telemetry.addData("Values", value);
+            RightForward.setPower(-0.3);
+            RightBack.setPower(-0.3);
+            LeftForward.setPower(0.3);
+            LeftBack.setPower(0.3);
+
+            while (value < 135 && !isStopRequested()) {
+
+                value = pipeline.getAnalysis();
+
+                telemetry.addData("Values", value);
+                telemetry.addLine("TRYING TO TURN");
+                telemetry.update();
+
+            }
+
+            telemetry.addLine("Aman is fat");
             telemetry.update();
 
+            RightForward.setPower(0);
+            RightBack.setPower(0);
+            LeftForward.setPower(0);
+            LeftBack.setPower(0);
 
         }
 
@@ -178,7 +192,7 @@ public class wobbleDetection extends LinearOpMode {
         /*
          * The core values which define the location and size of the sample regions
          */
-        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(394,350);
+        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(130,50);
 
         static final int REGION_WIDTH = 118;
         static final int REGION_HEIGHT = 130;
