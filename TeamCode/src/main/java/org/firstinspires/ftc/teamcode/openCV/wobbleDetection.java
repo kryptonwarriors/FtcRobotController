@@ -22,7 +22,7 @@ import org.firstinspires.ftc.teamcode.util.Util;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.util.PIDController;
-import org.opencv.core.Core;
+import org.opencv.core.*;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
@@ -97,23 +97,8 @@ public class wobbleDetection extends LinearOpMode {
     public void runOpMode() throws InterruptedException{
 
 
-        RightForward = hardwareMap.dcMotor.get("RightForward");
-        RightBack = hardwareMap.dcMotor.get("RightBack");
-        LeftForward = hardwareMap.dcMotor.get("LeftForward");
-        LeftBack = hardwareMap.dcMotor.get("LeftBack");
-
-        LeftBack.setDirection(DcMotor.Direction.REVERSE);
-        LeftForward.setDirection(DcMotor.Direction.REVERSE);
-/*
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
-*/
-
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(
-                hardwareMap.get(WebcamName.class, "Webcam 1"),
-                cameraMonitorViewId);
-
 
         webcam.openCameraDevice();//open camera
         pipeline = new StageSwitchingPipeline();
@@ -138,39 +123,6 @@ public class wobbleDetection extends LinearOpMode {
         if (opModeIsActive() && !isStopRequested()) {
 
 
-            while(value >= 135 && !isStopRequested()){
-                value = pipeline.getAnalysis();
-
-                telemetry.addData("Values", value);
-                telemetry.addLine("WAITING");
-                telemetry.update();
-
-            }
-
-            sleep(2000);
-
-            RightForward.setPower(-0.3);
-            RightBack.setPower(-0.3);
-            LeftForward.setPower(0.3);
-            LeftBack.setPower(0.3);
-
-            while (value < 135 && !isStopRequested()) {
-
-                value = pipeline.getAnalysis();
-
-                telemetry.addData("Values", value);
-                telemetry.addLine("TRYING TO TURN");
-                telemetry.update();
-
-            }
-
-            telemetry.addLine("Aman is fat");
-            telemetry.update();
-
-            RightForward.setPower(0);
-            RightBack.setPower(0);
-            LeftForward.setPower(0);
-            LeftBack.setPower(0);
 
         }
 
@@ -178,99 +130,63 @@ public class wobbleDetection extends LinearOpMode {
     public static class StageSwitchingPipeline extends OpenCvPipeline
     {
 
-        public enum wobbleState {
-            detected, notPresent
-        }
-
-        /*
-         * Some color constants
-         */
-
-        static final Scalar BLACK = new Scalar(0, 0, 0);
-        static final Scalar ORANGE = new Scalar(255, 110, 2);
-
-        /*
-         * The core values which define the location and size of the sample regions
-         */
-        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(130,50);
-
-        static final int REGION_WIDTH = 118;
-        static final int REGION_HEIGHT = 130;
-
-        final int FOUR_RING_THRESHOLD = 140;
-        final int ONE_RING_THRESHOLD = 134;
-
-        Point region1_pointA = new Point(
-                REGION1_TOPLEFT_ANCHOR_POINT.x,
-                REGION1_TOPLEFT_ANCHOR_POINT.y);
-        Point region1_pointB = new Point(
-                REGION1_TOPLEFT_ANCHOR_POINT.x + REGION_WIDTH,
-                REGION1_TOPLEFT_ANCHOR_POINT.y + REGION_HEIGHT);
-
         /*
          * Working variables
          */
-        Mat region1_Cr;
-        Mat YCrCb = new Mat();
-        Mat Cr = new Mat();
-        int avg1;
+        Mat mat;
+        Mat ret;
+        Height height;
 
-        // Volatile since accessed by OpMode thread w/o synchronization
-        public volatile StageSwitchingPipeline.wobbleState presence = StageSwitchingPipeline.wobbleState.notPresent;
-        /*
-         * This function takes the RGB frame, converts to YCrCb,
-         * and extracts the Cb channel to the 'Cb' variable
-         */
-        void inputToCr(Mat input)
-        {
-            Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
-            Core.extractChannel(YCrCb, Cr, 1);
-        }
+
+        public enum Height {
+            wobble, noWobble
+    }
+
+    Scalar lowerOrange = new Scalar(0, 141, 0);
+    Scalar upperOrange = new Scalar(255, 230, 95);
+
+    int CAMERA_WIDTH = 320;
+
+    int HORIZON = (int) (100/320) * CAMERA_WIDTH;
+
+    int MID_WIDTH = (50/320) * CAMERA_WIDTH;
+
+    static double BOUND_RATIO = 0.7;
 
         @Override
         public void init(Mat firstFrame)
         {
-            inputToCr(firstFrame);
-
-            region1_Cr = Cr.submat(new Rect(region1_pointA, region1_pointB));
+            height = Height.noWobble;
+            ret = new Mat();
+            mat = new Mat();
         }
 
         @Override
         public Mat processFrame(Mat input)
         {
-            inputToCr(input);
+            ret.release();
 
-            avg1 = (int) Core.mean(region1_Cr).val[0];
+            ret = new Mat();
 
-            Imgproc.rectangle(
-                    input, // Buffer to draw on
-                    region1_pointA, // First point which defines the rectangle
-                    region1_pointB, // Second point which defines the rectangle
-                    BLACK, // The color the rectangle is drawn in
-                    2); // Thickness of the rectangle lines
+            Imgproc.cvtColor(input, mat, Imgproc.COLOR_RGB2YCrCb);
 
-            presence = wobbleState.notPresent; // Record our configuration
+            Mat mask = new Mat(mat.rows(), mat.cols(), CvType.CV_8UC1);
+            Core.inRange(mat, lowerOrange, upperOrange, mask);
 
-            if(avg1 > FOUR_RING_THRESHOLD){
-                presence = wobbleState.detected;
-            }else{
-                presence = wobbleState.notPresent;
-            }
+            Core.bitwise_and(input, input, ret, mask);
 
-            Imgproc.rectangle(
-                    input, // Buffer to draw on
-                    region1_pointA, // First point which defines the rectangle
-                    region1_pointB, // Second point which defines the rectangle
-                    ORANGE, // The color the rectangle is drawn in
-                    5);
+            Imgproc.GaussianBlur(mask, mask, new Size(5, 15), 0);
+
+            List<MatOfPoint> countours = new ArrayList();
+
+            Mat hierarchy = new Mat();
+
+          //  Imgproc.findContours(mask)
+
 
             return input;
         }
 
-        public int getAnalysis()
-        {
-            return avg1;
-        }
     }
 
 }

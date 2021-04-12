@@ -25,6 +25,7 @@ import org.firstinspires.ftc.teamcode.util.PIDController;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
@@ -80,8 +81,8 @@ public class colorReact extends LinearOpMode {
     private static float[] rightPos = {6f / 8f + offsetX, 4f / 8f + offsetY};
     //moves all rectangles right or left by amount. units are in ratio to monitor
 
-    private final int rows = 640;
-    private final int cols = 480;
+    public final int rows = 640;
+    public final int cols = 480;
 
 
     //red - 185
@@ -98,53 +99,30 @@ public class colorReact extends LinearOpMode {
     public void runOpMode() throws InterruptedException{
 
 
-        RightForward = hardwareMap.dcMotor.get("RightForward");
+        /*RightForward = hardwareMap.dcMotor.get("RightForward");
         RightBack = hardwareMap.dcMotor.get("RightBack");
         LeftForward = hardwareMap.dcMotor.get("LeftForward");
         LeftBack = hardwareMap.dcMotor.get("LeftBack");
 
         LeftBack.setDirection(DcMotor.Direction.REVERSE);
         LeftForward.setDirection(DcMotor.Direction.REVERSE);
-
+/*
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(
                 hardwareMap.get(WebcamName.class, "Webcam 1"),
                 cameraMonitorViewId);
+        */
+
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        webcam = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
+        
         webcam.openCameraDevice();//open camera
         pipeline = new StageSwitchingPipeline();
         webcam.setPipeline(pipeline);//different stages
-        webcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
-
-        telemetry.addLine("Waiting for start");
-        telemetry.update();
-
-        waitForStart();
+        webcam.startStreaming(rows, cols, OpenCvCameraRotation.UPRIGHT);
 
 
-        while (opModeIsActive() && !isStopRequested()) {
-
-
-
-            while (valMid < 180) {
-
-                RightForward.setPower(0.2);
-                RightBack.setPower(0.2);
-                LeftForward.setPower(-0.2);
-                LeftBack.setPower(-0.2);
-
-                telemetry.addData("Values", valLeft + "   " + valMid + "   " + valRight);
-                telemetry.update();
-
-            }
-            while(valMid > 180) {
-
-                RightForward.setPower(0);
-                RightBack.setPower(0);
-                LeftForward.setPower(0);
-                LeftBack.setPower(0);
-            }
-
-
+        while (!isStopRequested()) {
 
 
         }
@@ -157,6 +135,8 @@ public class colorReact extends LinearOpMode {
         Mat all = new Mat();
         List<MatOfPoint> contoursList = new ArrayList<>();
 
+
+
         enum Stage {//color difference. greyscale
             detection,//includes outlines
             THRESHOLD,//b&w
@@ -164,8 +144,10 @@ public class colorReact extends LinearOpMode {
         }
 
         enum wobbleState {
-            detected, notPresent
+            present, notPresent
         }
+
+        public volatile StageSwitchingPipeline.wobbleState state = StageSwitchingPipeline.wobbleState.notPresent;
 
         private Stage stageToRenderToViewport = Stage.detection;
         private Stage[] stages = Stage.values();
@@ -201,62 +183,74 @@ public class colorReact extends LinearOpMode {
             Core.extractChannel(yCbCrChan2Mat, yCbCrChan2Mat, 1);//takes cr difference and stores (coi is channel of interest)
                                                                      //0 = Y, 1 = Cr, 2 = Cb
 
+
+
             //b&w (thresholding to make a map of the desired color
             Imgproc.threshold(yCbCrChan2Mat, thresholdMat, threshold, 255, Imgproc.THRESH_BINARY);
+
+            Mat eroder= Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size( 3, 3));
+
+            Mat dilator = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(8,8));
+
+            Imgproc.erode(thresholdMat, thresholdMat, eroder);
+            Imgproc.erode(thresholdMat, thresholdMat, eroder);
+
+            Imgproc.dilate(thresholdMat, thresholdMat, dilator);
+            Imgproc.dilate(thresholdMat, thresholdMat, dilator);
 
             //outline/contour
             Imgproc.findContours(thresholdMat, contoursList, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
             yCbCrChan2Mat.copyTo(all);//copies mat object
             Imgproc.drawContours(all, contoursList, -1, new Scalar(255, 0, 0), 4, 8);//draws blue contours
 
-            Mat eroder= Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size( 3, 3));
 
-            Mat dilator = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(8,8));
+            int maxWidth = 0;
 
+            Rect maxRect = new Rect();
 
-            Imgproc.erode(thresholdMat, thresholdMat, eroder);
-            Imgproc.erode(thresholdMat, thresholdMat, eroder);
+            for(MatOfPoint c : contoursList ){
+                MatOfPoint2f copy = new MatOfPoint2f(c.toArray());
+                Rect rect = Imgproc.boundingRect(copy);
 
-            Imgproc.dilate(thresholdMat, thresholdMat, dilator);
-            Imgproc.dilate(thresholdMat, thresholdMat, dilator);
+                int w = rect.width;
 
-            //get values from frame
-            double[] pixMid = yCbCrChan2Mat.get((int) (input.rows() * midPos[1]), (int) (input.cols() * midPos[0]));//gets value at circle
-            valMid = (int) pixMid[0];
-
-            //create three points
-            Point pointMid = new Point((int) (input.cols() * midPos[0]), (int) (input.rows() * midPos[1]));
-
-            //draw circles on those points
-            Imgproc.circle(all, pointMid, 5, new Scalar(255, 0, 0), 1);//draws circle
-
-            Imgproc.rectangle(//3-5
-                    all,
-                    new Point(
-                            input.cols() * (midPos[0] - rectWidth / 1.5),
-                            input.rows() * (midPos[1] - rectHeight / .7)),
-                    new Point(
-                            input.cols() * (midPos[0] + rectWidth / 1.5),
-                            input.rows() * (midPos[1] + rectHeight / .7)),
-                    new Scalar(0, 255, 0), 3);
-
-            switch (stageToRenderToViewport) {
-                case THRESHOLD: {
-                    return thresholdMat;
+                if(w > maxWidth){
+                    maxWidth = w;
+                    maxRect = rect;
                 }
 
-                case detection: {
-                    return all;
-                }
-
-                case RAW_IMAGE: {
-                    return input;
-                }
-
-                default: {
-                    return input;
-                }
+                c.release();
+                copy.release();
             }
+
+            Imgproc.rectangle(thresholdMat, maxRect, new Scalar(0.0, 0.0, 255), 5);
+
+
+            if(maxRect.x > 320){
+                state = wobbleState.present;
+            } else{
+                state = wobbleState.notPresent;
+            }
+
+
+
+                switch (stageToRenderToViewport) {
+                    case THRESHOLD: {
+                        return thresholdMat;
+                    }
+
+                    case detection: {
+                        return all;
+                    }
+
+                    case RAW_IMAGE: {
+                        return input;
+                    }
+
+                    default: {
+                        return input;
+                    }
+                }
         }
 
     }
