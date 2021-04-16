@@ -140,7 +140,9 @@ public class newTele extends LinearOpMode {
         LeftForward.setPower(0);
         LeftBack.setPower(0);
 
-        WobbleClamper.setPosition(0.2);
+        Hopper.setDirection(Servo.Direction.FORWARD);
+
+        WobbleClamper.setPosition(0.5);
         telemetry.addData(">", "INIT DONE");
 // RESET TIME
         runtime.reset();
@@ -175,7 +177,7 @@ public class newTele extends LinearOpMode {
                 if(Shooter.getPower() > 0){
                     Hopper.setPosition(1);
                 } else {
-                    Hopper.setPosition(0);
+                    Hopper.setPosition(0.4);
                 }
 
                 if (gamepad1.right_trigger > 0.01) {
@@ -285,7 +287,7 @@ public class newTele extends LinearOpMode {
                         else if (i == 1)
                             Conveyor.setTargetPosition(650);
                         else if (i == 2)
-                            Conveyor.setTargetPosition(1000);
+                            Conveyor.setTargetPosition(1600);
 
                         Conveyor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
@@ -310,7 +312,7 @@ public class newTele extends LinearOpMode {
                 }
 
                 if (gamepad2.left_stick_y > 0.01 || gamepad2.left_stick_y < -0.01) {
-                    Wobbler.setPower(-gamepad2.left_stick_y);
+                    Wobbler.setPower(-gamepad2.left_stick_y * 0.54);
                 } else {
                     Wobbler.setPower(0);
                 }
@@ -319,14 +321,14 @@ public class newTele extends LinearOpMode {
                     //Shooter.setPower(0.54);
                     Shooter.setPower(0.65);
                 } else if (gamepad2.dpad_down) {
-                    Shooter.setPower(0.5);
+                    Shooter.setPower(0.56);
                 } else {
                     Shooter.setPower(0);
                 }
 
-                if (gamepad2.right_bumper) { //OUT
-                    WobbleClamper.setPosition(0.2);
-                } else if (gamepad2.left_bumper) { //IN
+                if (gamepad2.left_bumper) { //OUT
+                    WobbleClamper.setPosition(0.5);
+                } else if (gamepad2.right_bumper) { //IN
                     WobbleClamper.setPosition(0.8);
                 }
 
