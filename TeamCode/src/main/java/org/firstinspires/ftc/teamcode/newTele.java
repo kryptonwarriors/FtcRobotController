@@ -86,9 +86,9 @@ public class newTele extends LinearOpMode {
 
         WobbleTouch = hardwareMap.get(TouchSensor.class, "WobbleTouch");
 
-        //blinkblinkboy = hardwareMap.get(RevBlinkinLedDriver.class, "blinkblinkboy");
+        blinkblinkboy = hardwareMap.get(RevBlinkinLedDriver.class, "blinkblinkboy");
 
-        // color = hardwareMap.get(ColorSensor.class, "color");
+         color = hardwareMap.get(ColorSensor.class, "color1");
 
         Intake = hardwareMap.dcMotor.get("Intake");
         Conveyor = hardwareMap.dcMotor.get("Conveyor");
@@ -159,9 +159,11 @@ public class newTele extends LinearOpMode {
 
             runtime.reset();
 
+            resetStartTime();
+
             while (opModeIsActive()) {
 
-                //ringDistance =  ((DistanceSensor)color).getDistance(DistanceUnit.CM);
+                ringDistance =  ((DistanceSensor)color).getDistance(DistanceUnit.CM);
 
                /* if(time > 5){
                     endgame = true;
@@ -336,6 +338,7 @@ public class newTele extends LinearOpMode {
                 telemetry.addData("Conveyor Encoders", Conveyor.getCurrentPosition());
                 telemetry.addData("Shooter Encoders", Shooter.getCurrentPosition());
                 telemetry.addData("Shooter", Shooter.getPower());
+                telemetry.addData("ringdistanece",ringDistance);
 
 
       /*
@@ -348,7 +351,7 @@ public class newTele extends LinearOpMode {
         Wobbler.setPower(0);
       }
 */
-/*
+
                 if (ringDistance < 3){
 
                     blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.WHITE);
@@ -375,7 +378,7 @@ public class newTele extends LinearOpMode {
                     blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.RAINBOW_RAINBOW_PALETTE);
 
                 }
-*/
+
 
 
                 telemetry.addData("time", time);

@@ -99,7 +99,7 @@ public class ThreePowerShot extends LinearOpMode {
     public static int width2 = 118;
     public static int height2 = 130;
 
-    public static int xPos3 = 45;
+    public static int xPos3 = 55;
 
     public static int xPos4 = 50;
     public static int yPos4 = 50;
@@ -390,15 +390,17 @@ public class ThreePowerShot extends LinearOpMode {
 
 */
 //GO TO POWERSHOTS
-            moveEncoders(Forward, 0.6, 1700, 0);
+            //moveEncoders(Forward, 0.6, 1700, 0);
 
             sleep(400);
 
-            imuTurn(RTURN, 0.23, 6);
+            //imuTurn(RTURN, 0.23, 6);
 
             powershot();
 
             sleep(200);
+
+            sleep(100000000);
 
             //C and B = -35
             //A = -86
@@ -427,7 +429,7 @@ public class ThreePowerShot extends LinearOpMode {
                 LeftBack.setPower(0);
                 RightBack.setPower(0);
 
-                moveEncoders(BACKWARD, 0.7, 180, -90);
+                moveEncoders(BACKWARD, 0.7, 250, -90);
 
                 sleep(10);
 
@@ -435,7 +437,7 @@ public class ThreePowerShot extends LinearOpMode {
 
                 sleep(100);
 
-                moveEncoders(Forward, 0.7, 200, -90);
+                moveEncoders(Forward, 0.7, 450, -90);
 
                 LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 LeftForward.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -466,7 +468,7 @@ public class ThreePowerShot extends LinearOpMode {
                 LeftForward.setPower(0.2);
                 LeftBack.setPower(0.2);
 
-                while (value < 125 && !isStopRequested() && getAngle() > -106) {
+                while (value < 125 && !isStopRequested() && getAngle() > -95) {
 
                     value = pipeline.getWobbleAnalysisB();
 
@@ -488,7 +490,7 @@ public class ThreePowerShot extends LinearOpMode {
 
                 double angle = getAngle();
 
-                moveEncoders(Forward,0.4, 120, angle);
+                moveEncoders(Forward,0.4, 85, angle);
 
                 sleep(200);
 
@@ -529,7 +531,7 @@ public class ThreePowerShot extends LinearOpMode {
 
                 sleep(100);
 
-                moveEncoders(Forward,0.6, 380, -90);
+                moveEncoders(Forward,0.6, 420, -90);
 
                 sleep(200);
 
@@ -1167,7 +1169,7 @@ public class ThreePowerShot extends LinearOpMode {
             LeftBack.setPower(power);
             RightForward.setPower(-power);
             RightBack.setPower(-power);
-            Shooter.setPower(0.65);
+            Shooter.setPower(0.53);
             Conveyor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
             Conveyor.setTargetPosition(800);
