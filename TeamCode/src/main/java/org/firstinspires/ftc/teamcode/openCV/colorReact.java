@@ -124,6 +124,12 @@ public class colorReact extends LinearOpMode {
 
         while (!isStopRequested()) {
 
+            telemetry.addData("width", pipeline.getWidth());
+            telemetry.addData("x", pipeline.getXPos());
+            telemetry.addData("y", pipeline.getYPos());
+            telemetry.addData("height", pipeline.getHeight());
+            telemetry.addData("area", pipeline.getArea());
+            telemetry.update();
 
         }
 
@@ -135,7 +141,13 @@ public class colorReact extends LinearOpMode {
         Mat all = new Mat();
         List<MatOfPoint> contoursList = new ArrayList<>();
 
+        static final Scalar ORANGE = new Scalar(255, 110, 2);
 
+        public int width;
+        public int x;
+        public int y;
+        public int height;
+        public double area;
 
         enum Stage {//color difference. greyscale
             detection,//includes outlines
@@ -151,6 +163,8 @@ public class colorReact extends LinearOpMode {
 
         private Stage stageToRenderToViewport = Stage.detection;
         private Stage[] stages = Stage.values();
+
+
 
 
         @Override
@@ -179,11 +193,9 @@ public class colorReact extends LinearOpMode {
             //color diff cr.
             //lower cb = more blue = skystone = white
             //higher cb = less blue = yellow stone = grey
-            Imgproc.cvtColor(input, yCbCrChan2Mat, Imgproc.COLOR_RGB2YCrCb);//converts rgb to ycrcb
+            Imgproc.cvtColor(input, yCbCrChan2Mat, Imgproc.COLOR_RGB2YCrCb);;//converts rgb to ycrcb
             Core.extractChannel(yCbCrChan2Mat, yCbCrChan2Mat, 1);//takes cr difference and stores (coi is channel of interest)
                                                                      //0 = Y, 1 = Cr, 2 = Cb
-
-
 
             //b&w (thresholding to make a map of the desired color
             Imgproc.threshold(yCbCrChan2Mat, thresholdMat, threshold, 255, Imgproc.THRESH_BINARY);
@@ -199,12 +211,12 @@ public class colorReact extends LinearOpMode {
             Imgproc.dilate(thresholdMat, thresholdMat, dilator);
 
             //outline/contour
-            Imgproc.findContours(thresholdMat, contoursList, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
-            yCbCrChan2Mat.copyTo(all);//copies mat object
-            Imgproc.drawContours(all, contoursList, -1, new Scalar(255, 0, 0), 4, 8);//draws blue contours
-
+            Imgproc.findContours(thresholdMat, contoursList, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_NONE);
+            yCbCrChan2Mat.copyTo(all);
+            Imgproc.drawContours(all, contoursList, -1, ORANGE, 4, 8);
 
             int maxWidth = 0;
+            int tempX = 0;
 
             Rect maxRect = new Rect();
 
@@ -213,33 +225,38 @@ public class colorReact extends LinearOpMode {
                 Rect rect = Imgproc.boundingRect(copy);
 
                 int w = rect.width;
+                int x = rect.x;
 
                 if(w > maxWidth){
                     maxWidth = w;
                     maxRect = rect;
+                    tempX = x;
                 }
 
                 c.release();
                 copy.release();
             }
 
-            Imgproc.rectangle(thresholdMat, maxRect, new Scalar(0.0, 0.0, 255), 5);
+            Imgproc.rectangle(thresholdMat, maxRect, new Scalar(0, 0.0, 255), 10);
+            Imgproc.rectangle(input, maxRect, new Scalar(0, 0.0, 255), 10);
+            Imgproc.rectangle(all, maxRect, new Scalar(0, 0.0, 255), 10);
+
+           // Imgproc.line(input, new Point(50,0), new Point(50, 480), new Scalar(255, 110, 2), 2);
+           // Imgproc.line(all, new Point(50,0), new Point(50, 480), new Scalar(255, 110, 2), 2);
 
 
-            if(maxRect.x > 320){
-                state = wobbleState.present;
-            } else{
-                state = wobbleState.notPresent;
-            }
-
-
+            width = maxRect.width;
+            x = maxRect.x;
+            y = maxRect.y;
+            area = maxRect.area();
+            height = maxRect.height;
 
                 switch (stageToRenderToViewport) {
                     case THRESHOLD: {
                         return thresholdMat;
                     }
 
-                    case detection: {
+                    case detection:{
                         return all;
                     }
 
@@ -252,6 +269,12 @@ public class colorReact extends LinearOpMode {
                     }
                 }
         }
+
+        public int getWidth() {return width;}
+        public int getXPos() {return x;}
+        public int getYPos() {return y;}
+        public int getHeight() {return height;}
+        public double getArea() {return area;}
 
     }
 

@@ -53,7 +53,8 @@ public class ThreePowerShot extends LinearOpMode {
 
 
     private ElapsedTime runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-    public DcMotor LeftForward, LeftBack, RightForward, RightBack, Wobbler, Ringer, Intake, Conveyor, Shooter;
+    public DcMotor LeftForward, LeftBack, RightForward, RightBack, Wobbler, Ringer, Intake, Conveyor;
+    public DcMotorEx Shooter;
     public Servo WobbleClamper, RingClamper;
     public DistanceSensor RightDistance, FrontDistance, LeftDistance;
 
@@ -71,6 +72,7 @@ public class ThreePowerShot extends LinearOpMode {
     PIDController diagonal;
     PIDController leftStrafe;
     PIDController cDrive;
+    PIDController shooter;
 
     public TouchSensor WobbleTouch;
 
@@ -147,7 +149,7 @@ public class ThreePowerShot extends LinearOpMode {
         /* SUBSYSTEM */
         Intake = hardwareMap.dcMotor.get("Intake");
         Conveyor = hardwareMap.dcMotor.get("Conveyor");
-        Shooter = hardwareMap.dcMotor.get("Shooter");
+        Shooter = hardwareMap.get(DcMotorEx.class, "Shooter");
 
         Wobbler = hardwareMap.dcMotor.get("Wobbler");
 
@@ -299,6 +301,12 @@ public class ThreePowerShot extends LinearOpMode {
             cDrive.setOutputRange(0, 0.75);
             cDrive.setInputRange(-90, 90);
             cDrive.enable();
+
+            shooter = new PIDController(0.016367, 0, 0);
+            shooter.setSetpoint(0.53);
+            shooter.setOutputRange(-0.1,0.1);
+            shooter.setInputRange(0,1);
+            shooter.enable();
 
 
 

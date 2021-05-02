@@ -10,6 +10,7 @@ import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -28,10 +29,16 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.util.PIDController;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+
+
+
 @TeleOp(name = "newTele", group = "")
 public class newTele extends LinearOpMode {
 
-    private DcMotor RightForward, RightBack, LeftForward, LeftBack, Intake, Shooter, Conveyor, Wobbler;
+    private DcMotor RightForward, RightBack, LeftForward, LeftBack, Intake, Conveyor, Wobbler;
+    private DcMotorEx Shooter;
     private Servo WobbleClamper, Hopper;
     private DistanceSensor BackDistance, RightDistance, FrontDistance, LeftDistance;
     private ElapsedTime runtime = new ElapsedTime();
@@ -49,6 +56,8 @@ public class newTele extends LinearOpMode {
     int i = 1;
     static double conveyorPower;
 
+
+
     boolean endgame = false;
 
     public static double ringDistance;
@@ -61,6 +70,8 @@ public class newTele extends LinearOpMode {
     public Orientation lastAngles = new Orientation();
     double globalAngle, correction, rotation;
     PIDController strafe;
+
+    FtcDashboard dashboard;
 
 
     private VoltageSensor voltageSensor;
@@ -82,7 +93,8 @@ public class newTele extends LinearOpMode {
         LeftForward = hardwareMap.dcMotor.get("LeftForward");
         LeftBack = hardwareMap.dcMotor.get("LeftBack");
 
-
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        telemetry = dashboard.getTelemetry();
 
         WobbleTouch = hardwareMap.get(TouchSensor.class, "WobbleTouch");
 
@@ -92,7 +104,7 @@ public class newTele extends LinearOpMode {
 
         Intake = hardwareMap.dcMotor.get("Intake");
         Conveyor = hardwareMap.dcMotor.get("Conveyor");
-        Shooter = hardwareMap.dcMotor.get("Shooter");
+        Shooter = hardwareMap.get(DcMotorEx.class, "Shooter");
 
         Wobbler = hardwareMap.dcMotor.get("Wobbler");
 
@@ -164,6 +176,10 @@ public class newTele extends LinearOpMode {
             while (opModeIsActive()) {
 
                 ringDistance =  ((DistanceSensor)color).getDistance(DistanceUnit.CM);
+
+                telemetry.addData("Shooter Velo", Shooter.getVelocity(AngleUnit.DEGREES));
+                telemetry.addData("PIDF Coeffs", Shooter.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER));
+
 
                /* if(time > 5){
                     endgame = true;
