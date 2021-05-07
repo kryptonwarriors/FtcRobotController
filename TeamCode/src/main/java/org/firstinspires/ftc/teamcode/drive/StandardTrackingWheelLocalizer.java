@@ -27,7 +27,7 @@ import java.util.List;
  */
 @Config
 public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer {
-    public static double TICKS_PER_REV = 2048;
+    public static double TICKS_PER_REV = 8192;
     public static double WHEEL_RADIUS = 0.69; // in
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (encoder) speed
 
@@ -44,10 +44,12 @@ public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer 
         ));
 
         leftEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "RightBack"));
-        rightEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "LeftBack"));
+        rightEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "LeftForward"));
         frontEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "RightForward"));
 
         // TODO: reverse any encoders using Encoder.setDirection(Encoder.Direction.REVERSE)
+
+        rightEncoder.setDirection(Encoder.Direction.REVERSE);
     }
 
     public static double encoderTicksToInches(double ticks) {
