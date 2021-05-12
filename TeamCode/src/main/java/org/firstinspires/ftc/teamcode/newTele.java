@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -172,6 +173,8 @@ public class newTele extends LinearOpMode {
             runtime.reset();
 
             resetStartTime();
+
+            Shooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(3, 2, 1, 1));
 
             while (opModeIsActive()) {
 
@@ -339,7 +342,7 @@ public class newTele extends LinearOpMode {
                     //Shooter.setPower(0.54);
                     Shooter.setPower(0.65);
                 } else if (gamepad2.dpad_down) {
-                    Shooter.setPower(0.56);
+                    Shooter.setPower(0.51);
                 } else {
                     Shooter.setPower(0);
                 }

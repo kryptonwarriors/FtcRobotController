@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 
 import org.firstinspires.ftc.teamcode.drive.opmode.TurnTest;
+import org.firstinspires.ftc.teamcode.openCV.colorReact;
 import org.firstinspires.ftc.teamcode.openCV.wobbleDetection;
 import org.firstinspires.ftc.teamcode.util.Encoder;
 import org.firstinspires.ftc.teamcode.util.Util;
@@ -21,9 +22,12 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.util.PIDController;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.ml.RTrees;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -41,10 +45,14 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import java.lang.annotation.Target;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.firstinspires.ftc.teamcode.drive.TwoWheelTrackingLocalizer.TICKS_PER_REV_PERPINDICULAR;
 import static org.firstinspires.ftc.teamcode.drive.TwoWheelTrackingLocalizer.TICKS_PER_REV_PARALLEL;
 import static org.firstinspires.ftc.teamcode.drive.TwoWheelTrackingLocalizer.WHEEL_RADIUS;
+
+import static org.firstinspires.ftc.teamcode.openCV.colorReact.threshold;
 
 
 
@@ -59,7 +67,9 @@ public class ThreePowerShot extends LinearOpMode {
     public DistanceSensor RightDistance, FrontDistance, LeftDistance;
 
     public OpenCvCamera webcam;
+    public OpenCvCamera backcam;
     public RingDeterminationPipeline pipeline;
+    public WobbleDetection wobblePipeline;
 
     // PID/IMU Variables
     public BNO055IMU imu;
@@ -111,10 +121,14 @@ public class ThreePowerShot extends LinearOpMode {
 
     boolean checkFrontDist = false;
 
+    public static int orangeThreshold = 160;
+    public static int horizon = 300;
+    public static int verticalHorion = 420;
+
     private VoltageSensor voltageSensor;
     private double initialVoltage;
 
-    //private RevBlinkinLedDriver blinkblinkboy;
+    private RevBlinkinLedDriver blinkblinkboy;
 
     double angle;
     public static int diagonalDistance;
@@ -153,7 +167,7 @@ public class ThreePowerShot extends LinearOpMode {
 
         Wobbler = hardwareMap.dcMotor.get("Wobbler");
 
-        //blinkblinkboy = hardwareMap.get(RevBlinkinLedDriver.class, "blinkblinkboy");
+        blinkblinkboy = hardwareMap.get(RevBlinkinLedDriver.class, "blinkblinkboy");
 
         WobbleClamper = hardwareMap.servo.get("WobbleClamper");
 
@@ -191,13 +205,27 @@ public class ThreePowerShot extends LinearOpMode {
         imu.initialize(imuParameters);
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(
-                hardwareMap.get(WebcamName.class, "Webcam 1"),
-                cameraMonitorViewId);
-        webcam.openCameraDevice();//open camera
+
+        int[] viewportContainerIds = OpenCvCameraFactory.getInstance()
+                .splitLayoutForMultipleViewports(
+                        cameraMonitorViewId, //The container we're splitting
+                        2, //The number of sub-containers to create
+                        OpenCvCameraFactory.ViewportSplitMethod.VERTICALLY); //Whether to split the container vertically or horizontally
+
+        backcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), viewportContainerIds[0]);
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 2"), viewportContainerIds[1]);
+
+        backcam.openCameraDevice();
+        webcam.openCameraDevice();
+
+        wobblePipeline = new WobbleDetection();
         pipeline = new RingDeterminationPipeline();
-        webcam.setPipeline(pipeline);//different stages
-        webcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
+
+        backcam.setPipeline(wobblePipeline);
+        webcam.setPipeline(pipeline);
+
+        backcam.startStreaming(640, 480, OpenCvCameraRotation.UPSIDE_DOWN);
+        webcam.startStreaming(640, 480, OpenCvCameraRotation.UPSIDE_DOWN);
 
         initialVoltage = voltageSensor.getVoltage();
 
@@ -240,16 +268,10 @@ public class ThreePowerShot extends LinearOpMode {
 
             }
 
-            value = pipeline.getAnalysis();
-            wobbleValue = pipeline.getWobbleAnalysis();
+            telemetry.addData("x", wobblePipeline.getXPos());
 
+            telemetry.addData("height", wobblePipeline.getHeight());
 
-            telemetry.addData("Ring Value", value);
-            telemetry.addData("wobbleValue", wobbleValue);
-            telemetry.addData("B", pipeline.getWobbleAnalysisB());
-            telemetry.addData("POWERSHOT1", pipeline.getPowershot1());
-            telemetry.addData("checkFrontDist", checkFrontDist);
-            telemetry.addData("ringConfig", pipeline.configuration);
             telemetry.addData("parrallelEncoder", LeftForward.getCurrentPosition());
             telemetry.addData("getAngle", getAngle());
             telemetry.addData("Leftbackposition", LeftBack.getCurrentPosition());
@@ -265,6 +287,7 @@ public class ThreePowerShot extends LinearOpMode {
 
         if (opModeIsActive() && !isStopRequested()) {
 
+            webcam.setPipeline(wobblePipeline);
 
             strafe = new PIDController(0.0016367*1.5, 0.00016367, 0.000016367);
             strafe.setSetpoint(0);
@@ -307,6 +330,33 @@ public class ThreePowerShot extends LinearOpMode {
             shooter.setOutputRange(-0.1,0.1);
             shooter.setInputRange(0,1);
             shooter.enable();
+
+            webcam.stopStreaming();
+
+            while (!isStopRequested()){
+
+                correction = wobblePipeline.getXPos();
+
+                if(correction < 450){
+                    LeftForward.setPower(-0.25);
+                    LeftBack.setPower(-0.25);
+                    RightForward.setPower(0.25);
+                    RightBack.setPower(0.25);
+                } else if(correction > 510){
+                    LeftForward.setPower(0.25);
+                    LeftBack.setPower(0.25);
+                    RightForward.setPower(-0.25);
+                    RightBack.setPower(-0.25);;
+                } else{
+                    LeftForward.setPower(0);
+                    LeftBack.setPower(0);
+                    RightForward.setPower(0);
+                    RightBack.setPower(0);
+
+                    telemetry.addData("x", correction);
+                    telemetry.update();
+                }
+            }
 
 
 
@@ -1614,7 +1664,126 @@ public class ThreePowerShot extends LinearOpMode {
 
         public int getPowershot1() { return powershot1; }
     }
+    static class WobbleDetection extends OpenCvPipeline {
+        Mat yCbCrChan2Mat = new Mat();
+        Mat thresholdMat = new Mat();
+        Mat all = new Mat();
+        List<MatOfPoint> contoursList = new ArrayList<>();
 
+        static final Scalar ORANGE = new Scalar(255, 110, 2);
+
+        public int width;
+        public int x;
+        public int y;
+        public int height;
+        public double area;
+
+        enum Stage {//color difference. greyscale
+            detection,//includes outlines
+            THRESHOLD,//b&w
+            RAW_IMAGE,//displays raw view
+        }
+
+        private Stage stageToRenderToViewport = Stage.detection;
+        private Stage[] stages = Stage.values();
+
+
+
+
+        @Override
+        public void onViewportTapped() {
+            /*
+             * Note that this method is invoked from the UI thread
+             * so whatever we do here, we must do quickly.
+             */
+
+            int currentStageNum = stageToRenderToViewport.ordinal();
+
+            int nextStageNum = currentStageNum + 1;
+
+            if (nextStageNum >= stages.length) {
+                nextStageNum = 0;
+            }
+
+            stageToRenderToViewport = stages[nextStageNum];
+        }
+
+
+        @Override
+        public Mat processFrame(Mat input) {
+            contoursList.clear();
+
+            //color diff cr.
+            //lower cb = more blue = skystone = white
+            //higher cb = less blue = yellow stone = grey
+            Imgproc.cvtColor(input, yCbCrChan2Mat, Imgproc.COLOR_RGB2YCrCb);;//converts rgb to ycrcb
+            Core.extractChannel(yCbCrChan2Mat, yCbCrChan2Mat, 1);//takes cr difference and stores (coi is channel of interest)
+            //0 = Y, 1 = Cr, 2 = Cb
+
+            //b&w (thresholding to make a map of the desired color
+            Imgproc.threshold(yCbCrChan2Mat, thresholdMat, orangeThreshold, 255, Imgproc.THRESH_BINARY);
+
+            Mat eroder= Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size( 3, 3));
+
+            Mat dilator = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(8,8));
+
+            Imgproc.erode(thresholdMat, thresholdMat, eroder);
+            Imgproc.erode(thresholdMat, thresholdMat, eroder);
+
+            Imgproc.dilate(thresholdMat, thresholdMat, dilator);
+            Imgproc.dilate(thresholdMat, thresholdMat, dilator);
+
+            //outline/contour
+            Imgproc.findContours(thresholdMat, contoursList, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_NONE);
+            yCbCrChan2Mat.copyTo(all);
+            Imgproc.drawContours(all, contoursList, -1, ORANGE, 4, 8);
+
+            int maxWidth = 0;
+            int tempX = 0;
+
+            Rect maxRect = new Rect();
+
+            for(MatOfPoint c : contoursList){
+                MatOfPoint2f copy = new MatOfPoint2f(c.toArray());
+                Rect rect = Imgproc.boundingRect(copy);
+
+                int w = rect.width;
+
+                if(w > maxWidth && rect.y + rect.height > horizon /*&& rect.x + rect.width > verticalHorion*/){
+                    maxWidth = w;
+                    maxRect = rect;
+                }
+
+                c.release();
+                copy.release();
+            }
+
+            Imgproc.line(all, new Point(0, horizon), new Point(640, horizon), new Scalar (255,0,255));
+            Imgproc.line(all, new Point(verticalHorion, 0), new Point(verticalHorion, 480), new Scalar (255,0,255));
+            Imgproc.rectangle(thresholdMat, maxRect, new Scalar(0, 0.0, 255), 10);
+            Imgproc.rectangle(input, maxRect, new Scalar(0, 0.0, 255), 10);
+            Imgproc.rectangle(all, maxRect, new Scalar(0, 0.0, 255), 10);
+
+            // Imgproc.line(input, new Point(50,0), new Point(50, 480), new Scalar(255, 110, 2), 2);
+            // Imgproc.line(all, new Point(50,0), new Point(50, 480), new Scalar(255, 110, 2), 2);
+
+
+            width = maxRect.width;
+            x = maxRect.x;
+            y = maxRect.y;
+            area = maxRect.area();
+            height = maxRect.height;
+
+            return all;
+        }
+
+        public int getWidth() { return width;}
+        public int getXPos() {return x;}
+        public int getYPos() {return y;}
+        public int getHeight() {return height;}
+        public double getArea() {return area;}
+
+    }
 
 
 }

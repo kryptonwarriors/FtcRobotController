@@ -87,7 +87,7 @@ public class colorReact extends LinearOpMode {
 
     //red - 185
     //blue - 118
-    private static final int threshold = 180;
+    public static final int threshold = 180;
 
 
 
@@ -114,12 +114,13 @@ public class colorReact extends LinearOpMode {
         */
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        webcam = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
-        
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(
+                hardwareMap.get(WebcamName.class, "Webcam 1"),
+                cameraMonitorViewId);
         webcam.openCameraDevice();//open camera
         pipeline = new StageSwitchingPipeline();
         webcam.setPipeline(pipeline);//different stages
-        webcam.startStreaming(rows, cols, OpenCvCameraRotation.UPRIGHT);
+        webcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
 
 
         while (!isStopRequested()) {
@@ -154,12 +155,6 @@ public class colorReact extends LinearOpMode {
             THRESHOLD,//b&w
             RAW_IMAGE,//displays raw view
         }
-
-        enum wobbleState {
-            present, notPresent
-        }
-
-        public volatile StageSwitchingPipeline.wobbleState state = StageSwitchingPipeline.wobbleState.notPresent;
 
         private Stage stageToRenderToViewport = Stage.detection;
         private Stage[] stages = Stage.values();
