@@ -56,8 +56,8 @@ import static org.firstinspires.ftc.teamcode.openCV.colorReact.threshold;
 
 
 
-@Autonomous(name = "ThreePowerShot", group = "autos")
-public class ThreePowerShot extends LinearOpMode {
+@Autonomous(name = "REDThreePowerShotAndWobble", group = "autos")
+public class REDThreePowerShotAndWobble extends LinearOpMode {
 
 
     private ElapsedTime runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
