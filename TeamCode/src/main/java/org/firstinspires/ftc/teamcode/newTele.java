@@ -94,9 +94,6 @@ public class newTele extends LinearOpMode {
         LeftForward = hardwareMap.dcMotor.get("LeftForward");
         LeftBack = hardwareMap.dcMotor.get("LeftBack");
 
-        FtcDashboard dashboard = FtcDashboard.getInstance();
-        telemetry = dashboard.getTelemetry();
-
         WobbleTouch = hardwareMap.get(TouchSensor.class, "WobbleTouch");
 
         blinkblinkboy = hardwareMap.get(RevBlinkinLedDriver.class, "blinkblinkboy");
@@ -108,10 +105,6 @@ public class newTele extends LinearOpMode {
         Shooter = hardwareMap.get(DcMotorEx.class, "Shooter");
 
         Wobbler = hardwareMap.dcMotor.get("Wobbler");
-
-        RightDistance = hardwareMap.get(DistanceSensor.class, "RightDistance");
-        //BackDistance = hardwareMap.get(DistanceSensor.class, "BackDistance");
-        FrontDistance = hardwareMap.get(DistanceSensor.class, "FrontDistance");
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
@@ -132,6 +125,8 @@ public class newTele extends LinearOpMode {
 
         RightBack.setDirection(DcMotor.Direction.REVERSE);
         RightForward.setDirection(DcMotor.Direction.REVERSE);
+
+        Intake.setDirection(DcMotor.Direction.REVERSE);
 
         RightForward.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         RightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -161,6 +156,10 @@ public class newTele extends LinearOpMode {
         runtime.reset();
 
         telemetry.update();
+
+        blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.WHITE);
+
+
         waitForStart();
         if (opModeIsActive()) {
 
@@ -196,7 +195,7 @@ public class newTele extends LinearOpMode {
                 }
 
                 if(Shooter.getPower() > 0){
-                    Hopper.setPosition(1);
+                    Hopper.setPosition(0.6);
                 } else {
                     Hopper.setPosition(0.4);
                 }
@@ -272,7 +271,7 @@ public class newTele extends LinearOpMode {
                     Conveyor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                     Conveyor.setPower(-0.9 * Scale(gamepad2.right_stick_y));
                 } else if (gamepad2.x) {
-                    Conveyor.setPower(0.6);
+                    Conveyor.setPower(0.85);
                 } else {
                     Intake.setPower(0);
                     Conveyor.setPower(0);
@@ -350,7 +349,7 @@ public class newTele extends LinearOpMode {
                 if (gamepad2.left_bumper) { //OUT
                     WobbleClamper.setPosition(0.5);
                 } else if (gamepad2.right_bumper) { //IN
-                    WobbleClamper.setPosition(0.8);
+                    WobbleClamper.setPosition(0.9);
                 }
 
                 telemetry.addData("Conveyor + Intake", Conveyor.getPower());
@@ -402,9 +401,6 @@ public class newTele extends LinearOpMode {
 
                 telemetry.addData("time", time);
                 telemetry.addData("WobbleTouch", WobbleTouch.getValue());
-                telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
-                //telemetry.addData("BackDistance", BackDistance.getDistance(DistanceUnit.INCH));
-                telemetry.addData("FrontDistace", FrontDistance.getDistance(DistanceUnit.INCH));
                 telemetry.addData("Time", time);
                 telemetry.addData("RightForward", RightForward.getPower());
                 telemetry.addData("LeftForward", LeftForward.getPower());

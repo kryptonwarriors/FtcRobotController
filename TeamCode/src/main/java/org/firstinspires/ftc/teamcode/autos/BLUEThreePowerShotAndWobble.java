@@ -107,7 +107,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
     int DISTANCELEFT = 16;
 
     public static int xPos1 = 20;
-    public static int yPos1 = 340;
+    public static int yPos1 = 347;
 
     public static int width1 = 95;
     public static int height1 = 77;
@@ -173,10 +173,6 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
         WobbleClamper = hardwareMap.servo.get("WobbleClamper");
 
-        /* DISTANCE SENSORS */
-        RightDistance = hardwareMap.get(DistanceSensor.class, "RightDistance");
-        FrontDistance = hardwareMap.get(DistanceSensor.class, "FrontDistance");
-
         WobbleTouch = hardwareMap.get(TouchSensor.class, "WobbleTouch");
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
@@ -184,6 +180,9 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
         /* MODE SWITCHES */
         LeftBack.setDirection(DcMotor.Direction.REVERSE);
         LeftForward.setDirection(DcMotor.Direction.REVERSE);
+
+        Intake.setDirection(DcMotor.Direction.REVERSE);
+
 
         RightForward.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         RightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -208,26 +207,29 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
 
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(
-                hardwareMap.get(WebcamName.class, "Webcam 1"),
-                cameraMonitorViewId);
+        /*int[] viewportContainerIds = OpenCvCameraFactory.getInstance()
+                .splitLayoutForMultipleViewports(
+                        cameraMonitorViewId, //The container we're splitting
+                        2, //The number of sub-containers to create
+                        OpenCvCameraFactory.ViewportSplitMethod.VERTICALLY); //Whether to split the container vertically or horizontally
 
+*/
 
-        backcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"));
-        //webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 2"), viewportContainerIds[1]);
+       // backcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), viewportContainerIds[0]);
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 2"), cameraMonitorViewId);
 
-        backcam.openCameraDevice();
-        //webcam.openCameraDevice();
+       // backcam.openCameraDevice();
+        webcam.openCameraDevice();
 
         wobblePipeline = new WobbleDetection();
         pipeline = new RingDeterminationPipeline();
         ringStackPipeline = new ringStackDetection();
 
-        backcam.setPipeline(ringStackPipeline);
-        //webcam.setPipeline(pipeline);
+        //backcam.setPipeline(ringStackPipeline);
+        webcam.setPipeline(pipeline);
 
-        backcam.startStreaming(frameHeight, frameWidth, OpenCvCameraRotation.UPSIDE_DOWN);
-        //webcam.startStreaming(frameHeight, frameWidth, OpenCvCameraRotation.UPSIDE_DOWN);
+       // backcam.startStreaming(frameHeight, frameWidth, OpenCvCameraRotation.UPSIDE_DOWN);
+        webcam.startStreaming(frameHeight, frameWidth, OpenCvCameraRotation.UPSIDE_DOWN);
 
         initialVoltage = voltageSensor.getVoltage();
 
@@ -260,7 +262,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
             } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.A){
 
-                encodersToDrop = 900;
+                encodersToDrop = 1100;
                 angleToDrop = 69;
                 armSpeed = -0.7;
                 diagonalDistance = 15;
@@ -286,8 +288,6 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
             telemetry.addData("Right Wheel", LeftForward.getCurrentPosition());
             telemetry.addData("encodersToDrop", encodersToDrop);
             telemetry.addData("angleToDrop", angleToDrop);
-            telemetry.addData("FrontDistance", FrontDistance.getDistance(DistanceUnit.INCH));
-            telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
             telemetry.addData("Time Elapsed", runtime);
             telemetry.addLine( ">>>INITIALIZATION COMPLETED");
             telemetry.update();
@@ -295,31 +295,31 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
         if (opModeIsActive() && !isStopRequested()) {
 
-            strafe = new PIDController(0.0016367*1.5, 0.00016367, 0.000016367);
+            strafe = new PIDController(0.0016367 * 1.5, 0.00016367, 0.000016367);
             strafe.setSetpoint(0);
             strafe.setOutputRange(0, 0.75);
             strafe.setInputRange(-90, 90);
             strafe.enable();
 
-            drive = new PIDController(0.016367, 0.00016367*5, 0.000016367*6);
+            drive = new PIDController(0.016367, 0.00016367 * 5, 0.000016367 * 6);
             drive.setSetpoint(0);
             drive.setOutputRange(0, 0.5);
             drive.setInputRange(-90, 90);
             drive.enable();
 
-            backDrive = new PIDController(0.016367*0.7, 0.00016367, 0);
+            backDrive = new PIDController(0.016367 * 0.7, 0.00016367, 0);
             backDrive.setSetpoint(0);
             backDrive.setOutputRange(0, 0.75);
             backDrive.setInputRange(-90, 90);
             backDrive.enable();
 
-            diagonal = new PIDController(0.016367*6, 0, 0);
+            diagonal = new PIDController(0.016367 * 6, 0, 0);
             diagonal.setSetpoint(0);
             diagonal.setOutputRange(0, 0.75);
             diagonal.setInputRange(-90, 90);
             diagonal.enable();
 
-            leftStrafe = new PIDController(0.0016367*2.5, 0.00016367, 0.000016367);
+            leftStrafe = new PIDController(0.0016367 * 2.5, 0.00016367, 0.000016367);
             leftStrafe.setSetpoint(0);
             leftStrafe.setOutputRange(0, 0.75);
             leftStrafe.setInputRange(-90, 90);
@@ -333,16 +333,11 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
             shooter = new PIDController(0.016367, 0, 0);
             shooter.setSetpoint(0.53);
-            shooter.setOutputRange(-0.1,0.1);
-            shooter.setInputRange(0,1);
+            shooter.setOutputRange(-0.1, 0.1);
+            shooter.setInputRange(0, 1);
             shooter.enable();
 
-
-            webcam.stopStreaming();
-            webcam.startStreaming(frameHeight, frameWidth, OpenCvCameraRotation.UPSIDE_DOWN);
             webcam.setPipeline(wobblePipeline);
-            backcam.stopStreaming();
-
            /* LeftForward.setPower(-0.2);
             LeftBack.setPower(-0.2);
             RightForward.setPower(0.2);
@@ -363,7 +358,8 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
             sleep(100000000);
 */
-            RightForward.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+           RightForward.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
             RightForward.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
@@ -389,19 +385,19 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
             openWobbleClamper();
 
-            sleep(100000000);
-
             //C
-            if(position == 3) {
+            if (position == 3) {
 
                 //GO BACK FROM WOBBLE GOAL
+
+                LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
                 LeftForward.setPower(-0.8);
                 RightForward.setPower(-0.8);
                 LeftBack.setPower(-0.8);
                 RightBack.setPower(-0.8);
 
-                sleep(400);
+                sleep(1400);
 
                 LeftForward.setPower(0);
                 RightForward.setPower(0);
@@ -411,6 +407,10 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 //                moveEncoders(BACKWARD, 0.7, 170, -90);
 
                 sleep(10);
+
+                moveEncoders(BACKWARD, 0.7, 1000, 0);
+
+                sleep(100000);
 
                 imuTurn(LTURN, 0.4, 170);
 
@@ -433,7 +433,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
                 resetStartTime();
 
-                while(value >= 130 && !isStopRequested() && time < 1.5){
+                while (value >= 130 && !isStopRequested() && time < 1.5) {
                     value = pipeline.getWobbleAnalysis();
 
                     telemetry.addData("Values", value);
@@ -477,7 +477,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
                 double angle = getAngle();
 
-                moveEncoders(Forward,0.4, 85, angle);
+                moveEncoders(Forward, 0.4, 85, angle);
 
                 sleep(200);
 
@@ -493,11 +493,11 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
                 sleep(100);
 
-                moveDistance(RIGHT, 0.6, 15, 0,2);
+                moveDistance(RIGHT, 0.6, 15, 0, 2);
 
                 sleep(100);
 
-                moveEncoders(Forward,0.7, 2800, 0);
+                moveEncoders(Forward, 0.7, 2800, 0);
 
                 openWobbleClamper();
 
@@ -510,15 +510,34 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
                 moveEncoders(BACKWARD, 0.5, 50, angleToDrop);
 
-                imuTurn(RTURN, 0.5, -85);
+                imuTurn(RTURN, 0.5, 20);
 
-                moveEncoders(BACKWARD, 0.6, 100, -90);
+                Intake.setPower(-1);
+                Conveyor.setPower(-0.9);
+
+                moveEncoders(BACKWARD, 0.6, 800, -9.5);
+
+                closeWobbleClamper();
+
+                sleep(1000);
+
+                Intake.setPower(0);
+
+                Shooter.setPower(0.62);
+
+                moveEncoders(Forward, 0.7, 230, -5);
+
+                shoot();
+
+                moveEncoders(Forward, 0.7, 200, 0);
+
+                sleep(1000000);
 
                 moveDistance(RIGHT, 0.7, 24, -90, 4);
 
                 sleep(100);
 
-                moveEncoders(Forward,0.6, 420, -90);
+                moveEncoders(Forward, 0.6, 420, -90);
 
                 sleep(200);
 
@@ -529,7 +548,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
                 resetStartTime();
 
-                while(value >= 130 && !isStopRequested() && time < 1.5){
+                while (value >= 130 && !isStopRequested() && time < 1.5) {
                     value = pipeline.getWobbleAnalysis();
 
                     telemetry.addData("Values", value);
@@ -585,7 +604,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
                 sleep(200);
 
-                imuTurn(RTURN, 0.4,-150);
+                imuTurn(RTURN, 0.4, -150);
 
                 Intake.setPower(-1);
                 Conveyor.setPower(-0.9);
@@ -617,13 +636,13 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
                 sleep(100);
 
-                moveEncoders(Forward,0.7,500,-350);
+                moveEncoders(Forward, 0.7, 500, -350);
 
                 Wobbler.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
                 Wobbler.setPower(-0.7);
 
-                while (!WobbleTouch.isPressed()){
+                while (!WobbleTouch.isPressed()) {
 
                 }
 
@@ -664,10 +683,9 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
                 //liftWobbleGoal(16367/2 - 900 - 5000);
 
 
-            }
-            else if (position == 1) {
+            } else if (position == 1) {
 
-                moveEncoders(BACKWARD, 0.4, 200, 90);
+                moveEncoders(BACKWARD, 0.4, 400, 90);
 
                 sleep(50);
 
@@ -682,12 +700,88 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 */
                 sleep(150);
 
-                moveEncoders(Forward, 0.7, 800, 180);
+                moveEncoders(Forward, 0.7, 950, 180);
 
-                sleep(100000000);
+                sleep(50);
 
-                webcam.setPipeline(wobblePipeline);
-                webcam.startStreaming(frameHeight, frameWidth, OpenCvCameraRotation.UPSIDE_DOWN);
+                while (value < 200 && !isStopRequested()) {
+
+                    value = wobblePipeline.getHeight();
+
+                    telemetry.addData("height", value);
+                    telemetry.addLine("TRYING TO TURN");
+                    telemetry.update();
+                }
+
+                sleep(100);
+
+                LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+                RightForward.setPower(-0.23);
+                RightBack.setPower(-0.23);
+                LeftForward.setPower(0.23);
+                LeftBack.setPower(0.23);
+
+                while (value > 192 && !isStopRequested()) {
+
+                    value = wobblePipeline.getXPos() + wobblePipeline.getWidth() / 2;
+
+                    telemetry.addData("XPos", value);
+                    telemetry.addLine("TRYING TO TURN");
+                    telemetry.update();
+
+                }
+
+                RightForward.setPower(0);
+                RightBack.setPower(0);
+                LeftForward.setPower(0);
+                LeftBack.setPower(0);
+
+                telemetry.addLine("Aman is fat");
+                telemetry.update();
+
+                sleep(50);
+
+                RightForward.setPower(0.38);
+                RightBack.setPower(0.38);
+                LeftForward.setPower(0.38);
+                LeftBack.setPower(0.38);
+
+                sleep(100);
+
+                while (!isStopRequested() && wobblePipeline.getHeight() > 80){
+
+
+                    telemetry.addData("area", wobblePipeline.getArea());
+                telemetry.addData("height", wobblePipeline.getHeight());
+                telemetry.update();
+            }
+
+                RightForward.setPower(0);
+                RightBack.setPower(0);
+                LeftForward.setPower(0);
+                LeftBack.setPower(0);
+
+                closeWobbleClamper();
+
+                liftWobbleGoal(900);
+
+                moveEncoders(BACKWARD, 0.7, 300, getAngle());
+
+                sleep(50);
+
+                imuTurn(RTURN, 0.4, 110);
+
+                moveEncoders(RIGHT, 0.7, 1300, 90);
+
+                dropWobbleGoal();
+
+                sleep(100);
+
+                moveEncoders(BACKWARD, 0.7, 700, 90);
+        }
+
+            sleep(100000000);
 
                 sleep(500);
 
@@ -713,6 +807,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
                 RightBack.setPower(0);
                 LeftForward.setPower(0);
                 LeftBack.setPower(0);
+
 
                 sleep(200);
 
@@ -756,7 +851,9 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
                 sleep(50);
 
-                moveEncoders(BACKWARD, 0.7, 100, -90);
+                moveEncoders(BACKWARD, 0.7, 300, getAngle());
+
+
 
 
             }
@@ -765,7 +862,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
         }
 
-    }
+
 
     public void moveDistance(int Direction, double Power, double Distance, double desiredAngle, double failSafeTime) {
 
@@ -1090,7 +1187,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
 
     public void closeWobbleClamper() {
-        WobbleClamper.setPosition(0.8);
+        WobbleClamper.setPosition(0.9);
     }
 
     public void openWobbleClamper () {
@@ -1259,9 +1356,9 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
             if(i==0)
                 Shooter.setPower(0.49);
             else if(i==1)
-                Shooter.setPower(0.518);
+                Shooter.setPower(0.532);
             else if(i==2)
-                Shooter.setPower(0.50);
+                Shooter.setPower(0.515);
 
 
             /*if (i == 0)
@@ -1375,7 +1472,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
         Conveyor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        Conveyor.setTargetPosition(800);
+        Conveyor.setTargetPosition(1400);
 
         Conveyor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
@@ -1399,8 +1496,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
     public void dropWobbleGoal() {
         Wobbler.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-
+        Wobbler.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         Wobbler.setPower(-1);
 
         while (!isStopRequested() && opModeIsActive() && !WobbleTouch.isPressed()) {

@@ -114,12 +114,12 @@ public class colorReact extends LinearOpMode {
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(
-                hardwareMap.get(WebcamName.class, "Webcam 1"),
+                hardwareMap.get(WebcamName.class, "Webcam 2"),
                 cameraMonitorViewId);
         webcam.openCameraDevice();//open camera
         pipeline = new StageSwitchingPipeline();
         webcam.setPipeline(pipeline);//different stages
-        webcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
+        webcam.startStreaming(640, 480, OpenCvCameraRotation.UPSIDE_DOWN);
 
 
         while (!isStopRequested()) {
@@ -188,11 +188,11 @@ public class colorReact extends LinearOpMode {
             //lower cb = more blue = skystone = white
             //higher cb = less blue = yellow stone = grey
             Imgproc.cvtColor(input, yCbCrChan2Mat, Imgproc.COLOR_RGB2YCrCb);;//converts rgb to ycrcb
-            Core.extractChannel(yCbCrChan2Mat, yCbCrChan2Mat, 1);//takes cr difference and stores (coi is channel of interest)
+            Core.extractChannel(yCbCrChan2Mat, yCbCrChan2Mat, 2);//takes cr difference and stores (coi is channel of interest)
                                                                      //0 = Y, 1 = Cr, 2 = Cb
 
             //b&w (thresholding to make a map of the desired color
-            Imgproc.threshold(yCbCrChan2Mat, thresholdMat, threshold, 255, Imgproc.THRESH_BINARY);
+            Imgproc.threshold(yCbCrChan2Mat, thresholdMat, 170, 180, Imgproc.THRESH_BINARY);
 
             Mat eroder= Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size( 3, 3));
 
@@ -209,7 +209,7 @@ public class colorReact extends LinearOpMode {
             yCbCrChan2Mat.copyTo(all);
             Imgproc.drawContours(all, contoursList, -1, ORANGE, 4, 8);
 
-            int maxWidth = 0;
+            int maxHeight = 0;
             int tempX = 0;
 
             Rect maxRect = new Rect();
@@ -218,11 +218,11 @@ public class colorReact extends LinearOpMode {
                 MatOfPoint2f copy = new MatOfPoint2f(c.toArray());
                 Rect rect = Imgproc.boundingRect(copy);
 
-                int w = rect.width;
+                int h = rect.height;
                 int x = rect.x;
 
-                if(w > maxWidth){
-                    maxWidth = w;
+                if(h > maxHeight){
+                    maxHeight = h;
                     maxRect = rect;
                     tempX = x;
                 }

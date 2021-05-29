@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -100,8 +101,8 @@ public class REDThreePowerShotAndWobble extends LinearOpMode {
     int RTURN_WITHSHOOT = 17;
     int DISTANCELEFT = 16;
 
-    public static int xPos1 = 520;
-    public static int yPos1 = 198;
+    public static int xPos1 = 540;
+    public static int yPos1 = 208;
 
     public static int width1 = 95;
     public static int height1 = 77;
@@ -115,6 +116,8 @@ public class REDThreePowerShotAndWobble extends LinearOpMode {
 
     public static int xPos4 = 50;
     public static int yPos4 = 50;
+
+    public static final int yOffset = 180;
 
     public static int powershotWidth = 118;
     public static int powershotHeight = 130;
@@ -172,7 +175,7 @@ public class REDThreePowerShotAndWobble extends LinearOpMode {
         WobbleClamper = hardwareMap.servo.get("WobbleClamper");
 
         /* DISTANCE SENSORS */
-        RightDistance = hardwareMap.get(DistanceSensor.class, "RightDistance");
+        //RightDistance = hardwareMap.get(DistanceSensor.class, "RightDistance");
         FrontDistance = hardwareMap.get(DistanceSensor.class, "FrontDistance");
 
         WobbleTouch = hardwareMap.get(TouchSensor.class, "WobbleTouch");
@@ -183,6 +186,7 @@ public class REDThreePowerShotAndWobble extends LinearOpMode {
         LeftBack.setDirection(DcMotor.Direction.REVERSE);
         LeftForward.setDirection(DcMotor.Direction.REVERSE);
 
+        Intake.setDirection(DcMotor.Direction.REVERSE);
 
         RightForward.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         RightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -191,6 +195,7 @@ public class REDThreePowerShotAndWobble extends LinearOpMode {
 
         Intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         Shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        Shooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(4, 2, 1, 1));
         Wobbler.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         closeWobbleClamper();
@@ -258,7 +263,7 @@ public class REDThreePowerShotAndWobble extends LinearOpMode {
 
             } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.A){
 
-                encodersToDrop = 640;
+                encodersToDrop = 690;
                 angleToDrop = -74;
                 armSpeed = -0.7;
                 diagonalDistance = 15;
@@ -267,6 +272,8 @@ public class REDThreePowerShotAndWobble extends LinearOpMode {
                 position = 1;
 
             }
+
+           telemetry.addData("configuration", pipeline.configuration);
 
             telemetry.addData("x", wobblePipeline.getXPos());
 
@@ -278,16 +285,12 @@ public class REDThreePowerShotAndWobble extends LinearOpMode {
             telemetry.addData("Right Wheel", LeftForward.getCurrentPosition());
             telemetry.addData("encodersToDrop", encodersToDrop);
             telemetry.addData("angleToDrop", angleToDrop);
-            telemetry.addData("FrontDistance", FrontDistance.getDistance(DistanceUnit.INCH));
-            telemetry.addData("RightDistance", RightDistance.getDistance(DistanceUnit.INCH));
             telemetry.addData("Time Elapsed", runtime);
             telemetry.addLine( ">>>INITIALIZATION COMPLETED");
             telemetry.update();
         }
 
         if (opModeIsActive() && !isStopRequested()) {
-
-            webcam.setPipeline(wobblePipeline);
 
             strafe = new PIDController(0.0016367*1.5, 0.00016367, 0.000016367);
             strafe.setSetpoint(0);
@@ -330,35 +333,6 @@ public class REDThreePowerShotAndWobble extends LinearOpMode {
             shooter.setOutputRange(-0.1,0.1);
             shooter.setInputRange(0,1);
             shooter.enable();
-
-            webcam.stopStreaming();
-
-            while (!isStopRequested()){
-
-                correction = wobblePipeline.getXPos();
-
-                if(correction < 450){
-                    LeftForward.setPower(-0.25);
-                    LeftBack.setPower(-0.25);
-                    RightForward.setPower(0.25);
-                    RightBack.setPower(0.25);
-                } else if(correction > 510){
-                    LeftForward.setPower(0.25);
-                    LeftBack.setPower(0.25);
-                    RightForward.setPower(-0.25);
-                    RightBack.setPower(-0.25);;
-                } else{
-                    LeftForward.setPower(0);
-                    LeftBack.setPower(0);
-                    RightForward.setPower(0);
-                    RightBack.setPower(0);
-
-                    telemetry.addData("x", correction);
-                    telemetry.update();
-                }
-            }
-
-
 
            /* //moveDistance(RIGHT, 0.7, 30, -90, 4);
 
@@ -448,17 +422,15 @@ public class REDThreePowerShotAndWobble extends LinearOpMode {
 
 */
 //GO TO POWERSHOTS
-            //moveEncoders(Forward, 0.6, 1700, 0);
+            moveEncoders(Forward, 0.6, 1700, 0);
 
             sleep(400);
 
-            //imuTurn(RTURN, 0.23, 6);
+            imuTurn(RTURN, 0.23, 6);
 
             powershot();
 
             sleep(200);
-
-            sleep(100000000);
 
             //C and B = -35
             //A = -86
@@ -583,7 +555,9 @@ public class REDThreePowerShotAndWobble extends LinearOpMode {
 
                 imuTurn(RTURN, 0.5, -85);
 
-                moveEncoders(BACKWARD, 0.6, 100, -90);
+                moveEncoders(BACKWARD, 0.6, 400, -90);
+
+                sleep(10000);
 
                 moveDistance(RIGHT, 0.7, 24, -90, 4);
 
@@ -738,7 +712,7 @@ public class REDThreePowerShotAndWobble extends LinearOpMode {
             }
             else if (position == 1) {
 
-                moveEncoders(BACKWARD, 0.4, 170, -90);
+                moveEncoders(BACKWARD, 0.4, 570, -90);
 /*
                 if (initialVoltage > 13) {
                     moveDistance(RIGHT, 0.65, 20, -87, 2);
@@ -747,6 +721,8 @@ public class REDThreePowerShotAndWobble extends LinearOpMode {
                 }
 */
                 sleep(200);
+
+                sleep(1000000);
 
                 moveDistance(RIGHT, 0.7, 25.3, -90, 4);
 
@@ -1274,11 +1250,11 @@ public class REDThreePowerShotAndWobble extends LinearOpMode {
 
 
             if(i==0)
-            Shooter.setPower(0.525);
+                Shooter.setPower(0.49);
             else if(i==1)
-                Shooter.setPower(0.530);
+                Shooter.setPower(0.518);
             else if(i==2)
-                Shooter.setPower(0.515);
+                Shooter.setPower(0.50);
 
 
             /*if (i == 0)
@@ -1471,13 +1447,13 @@ public class REDThreePowerShotAndWobble extends LinearOpMode {
         /*
          * The core values which define the location and size of the sample regions
          */
-        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(xPos1,yPos1);
+        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(xPos1,yPos1 + yOffset);
 
-        static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(xPos2,yPos2);
+        static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(xPos2,yPos2 + yOffset);
 
-        static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(xPos3, yPos2);
+        static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(xPos3, yPos2 + yOffset);
 
-        static final Point REGION_1POWERSHOT = new Point(xPos4, yPos4);
+        static final Point REGION_1POWERSHOT = new Point(xPos4, yPos4 + yOffset);
 
 
         static final int REGION1_WIDTH = width1;
