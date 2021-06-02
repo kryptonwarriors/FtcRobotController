@@ -3,36 +3,46 @@ package org.firstinspires.ftc.teamcode;
 // import GOAT || AMAN
 // import Da One And Only Muthu
 //import com.qualcomm.robotcore.brain.Moni;
-import android.text.method.Touch;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.util.PIDController;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvPipeline;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
 
+import java.util.ArrayList;
+import java.util.List;
 
 
 @TeleOp(name = "newTele", group = "")
@@ -43,6 +53,8 @@ public class newTele extends LinearOpMode {
     private Servo WobbleClamper, Hopper;
     private DistanceSensor BackDistance, RightDistance, FrontDistance, LeftDistance;
     private ElapsedTime runtime = new ElapsedTime();
+    public OpenCvCamera webcam;
+    public highGoalDetection highGoalDetection;
     private double Multiplier = 0.7;
     public double contPower;
     int FORWARD = 0;
@@ -57,8 +69,8 @@ public class newTele extends LinearOpMode {
     int i = 1;
     static double conveyorPower;
 
-
-
+    public static int horizon = 100;
+    boolean cameraOn = false;
     boolean endgame = false;
 
     public static double ringDistance;
@@ -159,6 +171,12 @@ public class newTele extends LinearOpMode {
 
         blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.WHITE);
 
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 2"), cameraMonitorViewId);
+        webcam.openCameraDevice();
+        highGoalDetection = new highGoalDetection();
+        webcam.setPipeline(highGoalDetection);
 
         waitForStart();
         if (opModeIsActive()) {
@@ -181,6 +199,8 @@ public class newTele extends LinearOpMode {
 
                 telemetry.addData("Shooter Velo", Shooter.getVelocity(AngleUnit.DEGREES));
                 telemetry.addData("PIDF Coeffs", Shooter.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER));
+                telemetry.addData("High Goal Xpos", highGoalDetection.getXPos() + (highGoalDetection.getWidth()/2));
+                telemetry.addData("High Goal Area", highGoalDetection.getArea());
 
 
                /* if(time > 5){
@@ -198,6 +218,16 @@ public class newTele extends LinearOpMode {
                     Hopper.setPosition(0.6);
                 } else {
                     Hopper.setPosition(0.4);
+                }
+
+                if (gamepad2.start){
+                    if(!cameraOn){
+                        webcam.startStreaming(640,480, OpenCvCameraRotation.UPRIGHT);
+                        cameraOn = true;
+                    } else {
+                        webcam.stopStreaming();
+                        cameraOn = false;
+                    }
                 }
 
                 if (gamepad1.right_trigger > 0.01) {
@@ -370,11 +400,21 @@ public class newTele extends LinearOpMode {
       }
 */
 
-                if (ringDistance < 3){
+                if (ringDistance < 1){
 
                     blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.WHITE);
 
-                } else if(80 > time && time > 60){
+                } else if(highGoalDetection.getXPos() + (highGoalDetection.getWidth()/2) < 400 && highGoalDetection.getXPos() + (highGoalDetection.getWidth()/2) > 230){
+
+                    blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.BEATS_PER_MINUTE_OCEAN_PALETTE);
+                }
+
+                else{
+                    blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
+                }
+
+
+                /*else if(80 > time && time > 60){
                     // 30 seconds before endgame
                     blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.ORANGE);
 
@@ -392,11 +432,12 @@ public class newTele extends LinearOpMode {
 
                 } else if(time > 120){
                     blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.RAINBOW_RAINBOW_PALETTE);
-                }else {
-                    blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.RAINBOW_RAINBOW_PALETTE);
-
                 }
 
+                else {
+                    blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.RAINBOW_RAINBOW_PALETTE);
+                }
+*/
 
 
                 telemetry.addData("time", time);
@@ -645,6 +686,123 @@ public class newTele extends LinearOpMode {
 
 
         }
+
+    }
+    static class highGoalDetection extends OpenCvPipeline {
+
+        Mat yCbCrChan2Mat = new Mat();
+        Mat thresholdMat = new Mat();
+        Mat all = new Mat();
+        List<MatOfPoint> contoursList = new ArrayList<>();
+
+        static final Scalar ORANGE = new Scalar(255, 110, 2);
+
+        public int width;
+        public int x;
+        public int y;
+        public int height;
+        public double area;
+
+        enum Stage {//color difference. greyscale
+            detection,//includes outlines
+            THRESHOLD,//b&w
+            RAW_IMAGE,//displays raw view
+        }
+
+        private Stage stageToRenderToViewport = Stage.detection;
+        private Stage[] stages = Stage.values();
+
+
+        @Override
+        public void onViewportTapped() {
+            /*
+             * Note that this method is invoked from the UI thread
+             * so whatever we do here, we must do quickly.
+             */
+
+            int currentStageNum = stageToRenderToViewport.ordinal();
+
+            int nextStageNum = currentStageNum + 1;
+
+            if (nextStageNum >= stages.length) {
+                nextStageNum = 0;
+            }
+
+            stageToRenderToViewport = stages[nextStageNum];
+        }
+
+
+        @Override
+        public Mat processFrame(Mat input) {
+            contoursList.clear();
+
+            //color diff cr.
+            //lower cb = more blue = skystone = white
+            //higher cb = less blue = yellow stone = grey
+            Imgproc.cvtColor(input, yCbCrChan2Mat, Imgproc.COLOR_RGB2YCrCb);;//converts rgb to ycrcb
+            Core.extractChannel(yCbCrChan2Mat, yCbCrChan2Mat, 1);//takes cb difference and stores (coi is channel of interest)
+            //0 = Y, 1 = Cr, 2 = Cb
+
+            //b&w (thresholding to make a map of the desired color
+            Imgproc.threshold(yCbCrChan2Mat, thresholdMat, 180, 190, Imgproc.THRESH_BINARY);
+
+            Mat eroder= Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size( 3, 3));
+
+            Mat dilator = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(8,8));
+
+            Imgproc.erode(thresholdMat, thresholdMat, eroder);
+            Imgproc.erode(thresholdMat, thresholdMat, eroder);
+
+            Imgproc.dilate(thresholdMat, thresholdMat, dilator);
+            Imgproc.dilate(thresholdMat, thresholdMat, dilator);
+
+            //outline/contour
+            Imgproc.findContours(thresholdMat, contoursList, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_NONE);
+            yCbCrChan2Mat.copyTo(all);
+            Imgproc.drawContours(all, contoursList, -1, ORANGE, 4, 8);
+
+            int maxWidth = 0;
+            Rect maxRect = new Rect();
+
+            for(MatOfPoint c : contoursList){
+                MatOfPoint2f copy = new MatOfPoint2f(c.toArray());
+                Rect rect = Imgproc.boundingRect(copy);
+
+                int w= rect.height;
+
+                if(w > maxWidth  && rect.y + rect.height < horizon /*&& rect.x + rect.width > verticalHorion*/){
+                    maxWidth = w;
+                    maxRect = rect;
+                }
+
+                c.release();
+                copy.release();
+            }
+
+            Imgproc.line(all, new Point(0, horizon), new Point(640, horizon), new Scalar (255,0,255));
+            //Imgproc.line(all, new Point(verticalHorion, 0), new Point(verticalHorion, frameWidth), new Scalar (255,0,255));
+            Imgproc.rectangle(thresholdMat, maxRect, new Scalar(0, 0.0, 255), 10);
+            Imgproc.rectangle(input, maxRect, new Scalar(0, 0.0, 255), 10);
+            Imgproc.rectangle(all, maxRect, new Scalar(0, 0.0, 255), 10);
+
+            // Imgproc.line(input, new Point(50,0), new Point(50, 480), new Scalar(255, 110, 2), 2);
+            // Imgproc.line(all, new Point(50,0), new Point(50, 480), new Scalar(255, 110, 2), 2);
+
+
+            width = maxRect.width;
+            x = maxRect.x;
+            y = maxRect.y;
+            area = maxRect.area();
+            height = maxRect.height;
+
+            return all;
+        }
+
+        public int getWidth() { return width;}
+        public int getXPos() {return x;}
+        public int getYPos() {return y;}
+        public int getHeight() {return height;}
+        public double getArea() {return area;}
 
     }
 

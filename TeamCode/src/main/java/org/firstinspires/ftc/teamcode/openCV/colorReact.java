@@ -119,13 +119,13 @@ public class colorReact extends LinearOpMode {
         webcam.openCameraDevice();//open camera
         pipeline = new StageSwitchingPipeline();
         webcam.setPipeline(pipeline);//different stages
-        webcam.startStreaming(640, 480, OpenCvCameraRotation.UPSIDE_DOWN);
+        webcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
 
 
         while (!isStopRequested()) {
 
             telemetry.addData("width", pipeline.getWidth());
-            telemetry.addData("x", pipeline.getXPos());
+            telemetry.addData("x", pipeline.getXPos() + pipeline.getWidth()/2);
             telemetry.addData("y", pipeline.getYPos());
             telemetry.addData("height", pipeline.getHeight());
             telemetry.addData("area", pipeline.getArea());
@@ -188,11 +188,11 @@ public class colorReact extends LinearOpMode {
             //lower cb = more blue = skystone = white
             //higher cb = less blue = yellow stone = grey
             Imgproc.cvtColor(input, yCbCrChan2Mat, Imgproc.COLOR_RGB2YCrCb);;//converts rgb to ycrcb
-            Core.extractChannel(yCbCrChan2Mat, yCbCrChan2Mat, 2);//takes cr difference and stores (coi is channel of interest)
+            Core.extractChannel(yCbCrChan2Mat, yCbCrChan2Mat, 1);//takes cr difference and stores (coi is channel of interest)
                                                                      //0 = Y, 1 = Cr, 2 = Cb
 
             //b&w (thresholding to make a map of the desired color
-            Imgproc.threshold(yCbCrChan2Mat, thresholdMat, 170, 180, Imgproc.THRESH_BINARY);
+            Imgproc.threshold(yCbCrChan2Mat, thresholdMat, 180, 190, Imgproc.THRESH_BINARY);
 
             Mat eroder= Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size( 3, 3));
 
