@@ -226,10 +226,10 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
         ringStackPipeline = new ringStackDetection();
 
         //backcam.setPipeline(ringStackPipeline);
-        webcam.setPipeline(pipeline);
+        webcam.setPipeline(wobblePipeline);
 
        // backcam.startStreaming(frameHeight, frameWidth, OpenCvCameraRotation.UPSIDE_DOWN);
-        webcam.startStreaming(frameHeight, frameWidth, OpenCvCameraRotation.UPSIDE_DOWN);
+        webcam.startStreaming(frameHeight, frameWidth, OpenCvCameraRotation.UPRIGHT);
 
         initialVoltage = voltageSensor.getVoltage();
 
@@ -238,7 +238,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
         while (!(isStopRequested() || isStarted())) {
 
 
-            //Update Neccessary Variables depending on Ring Configuration
+            /*//Update Neccessary Variables depending on Ring Configuration
             if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.C) {
 
                 encodersToDrop = 1845;
@@ -270,7 +270,16 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
                 secondWobbleEncoderDistance = 100;
                 position = 1;
 
-            }
+            }*/
+
+            angleToDrop = 23;
+            encodersToDrop = 750;
+            armSpeed = -0.7;
+            diagonalDistance = 20;
+            secondWobbleGoalDistance = 37;
+            secondWobbleEncoderDistance = 400;
+            position = 2;
+            angleForSecond = -342;
 
             RightForward.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
@@ -363,8 +372,13 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
             RightForward.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+            Shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+
 //GO TO POWERSHOTS
-            moveEncoders(Forward, 0.6, 1700, 0);
+            Shooter.setPower(.49);
+
+            moveEncoders(Forward, 0.7, 1700, 0);
 
             sleep(400);
 
@@ -381,7 +395,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
             sleep(50);
 
-            moveEncoders(FORWARD_WITH_ARM, 0.6, encodersToDrop, angleToDrop);
+            moveEncoders(FORWARD_WITH_ARM, 0.9, encodersToDrop, angleToDrop);
 
             openWobbleClamper();
 
@@ -514,22 +528,87 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
                 Intake.setPower(-1);
                 Conveyor.setPower(-0.9);
+                Shooter.setPower(0.57);
 
-                moveEncoders(BACKWARD, 0.6, 800, -9.5);
-
-                closeWobbleClamper();
+                moveEncoders(BACKWARD, 0.6, 820, -8.75);
 
                 sleep(1000);
 
                 Intake.setPower(0);
 
-                Shooter.setPower(0.62);
+                LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-                moveEncoders(Forward, 0.7, 230, -5);
+                sleep(500);
+
+                RightForward.setPower(0.25);
+                RightBack.setPower(0.25);
+                LeftForward.setPower(-0.25);
+                LeftBack.setPower(-0.25);
+
+                while(wobblePipeline.getXPos() + (wobblePipeline.getWidth()/2) < 310 && !isStopRequested()){
+                    telemetry.addLine("aiming daddy");
+                    telemetry.addData("xpos",wobblePipeline.getXPos() + (wobblePipeline.getWidth()/2));
+                    telemetry.update();
+                }
+
+                RightForward.setPower(0);
+                RightBack.setPower(0);
+                LeftForward.setPower(0);
+                LeftBack.setPower(0);
+
+                sleep(50);
 
                 shoot();
 
-                moveEncoders(Forward, 0.7, 200, 0);
+                moveEncoders(BACKWARD, 0.7, 50, 0);
+
+                sleep(50);
+
+                imuTurn(LTURN, 0.6, 130);
+
+                while (value < 200 && !isStopRequested()) {
+
+                    value = wobblePipeline.getHeight();
+
+                    telemetry.addData("height", value);
+                    telemetry.addLine("TRYING TO TURN");
+                    telemetry.update();
+                }
+
+                sleep(100);
+
+                LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+                RightForward.setPower(0.23);
+                RightBack.setPower(0.23);
+                LeftForward.setPower(-0.23);
+                LeftBack.setPower(-0.23);
+
+                while (wobblePipeline.getXPos() + wobblePipeline.getWidth() / 2 < 195 && !isStopRequested()) {
+
+                    value = wobblePipeline.getXPos() + wobblePipeline.getWidth() / 2;
+
+                    telemetry.addData("XPos", value);
+                    telemetry.addLine("TRYING TO TURN");
+                    telemetry.update();
+
+                }
+
+                RightForward.setPower(0);
+                RightBack.setPower(0);
+                LeftForward.setPower(0);
+                LeftBack.setPower(0);
+
+                telemetry.addLine("Aman is fat");
+                telemetry.update();
+
+                sleep(50);
+
+                moveEncoders(Forward, 0.23, 50, getAngle());
+
+                sleep(100);
+
+                closeWobbleClamper();
 
                 sleep(1000000);
 
@@ -781,82 +860,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
                 moveEncoders(BACKWARD, 0.7, 700, 90);
         }
 
-            sleep(100000000);
-
-                sleep(500);
-
-                RightForward.setPower(0.2);
-                RightBack.setPower(0.2);
-                LeftForward.setPower(-0.2);
-                LeftBack.setPower(-0.2);
-
-                while (value > frameHeight/2 && !isStopRequested() && getAngle() > 106) {
-
-                    value = wobblePipeline.getXPos();
-
-                    telemetry.addData("XPos", value);
-                    telemetry.addLine("TRYING TO TURN");
-                    telemetry.update();
-
-                }
-
-                telemetry.addLine("Aman is fat");
-                telemetry.update();
-
-                RightForward.setPower(0);
-                RightBack.setPower(0);
-                LeftForward.setPower(0);
-                LeftBack.setPower(0);
-
-
-                sleep(200);
-
-                sleep(10000000);
-
-                angle = getAngle();
-
-                moveEncoders(Forward, 0.3, 110, angle);
-
-                sleep(200);
-
-                closeWobbleClamper();
-
-                sleep(700);
-
-                liftWobbleGoal(900);
-
-                moveEncoders(LEFT, 0.7, 1900, -90);
-
-                sleep(50);
-
-                moveEncoders(Forward, 0.7, 100, -90);
-
-                //dropWobbleGoal();
-
-                Wobbler.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-                Wobbler.setPower(-0.7);
-
-                while (!WobbleTouch.isPressed()){
-
-                }
-
-                Wobbler.setPower(0);
-
-                openWobbleClamper();
-
-                sleep(50);
-
-                liftWobbleGoal(900);
-
-                sleep(50);
-
-                moveEncoders(BACKWARD, 0.7, 300, getAngle());
-
-
-
-
-            }
+            sleep(100000000); }
 
             //liftWobbleGoal(16367/2 - 900 - 800);
 
@@ -1347,7 +1351,6 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
     public void powershot(){
 
         Conveyor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        Shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         Conveyor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         for (int i = 0; i<3; i++) {
@@ -1369,7 +1372,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
                 Shooter.setPower(0.505);
 */
             if(i==0)
-                sleep(1300);
+                sleep(200);
             else if (i==1 || i==2)
                 sleep(100);
 
@@ -1720,7 +1723,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
             Imgproc.drawContours(all, contoursList, -1, ORANGE, 4, 8);
 
             int maxHeight = 0;
-            int tempX = 0;
+            int maxX = 0;
 
             Rect maxRect = new Rect();
 
@@ -1729,9 +1732,11 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
                 Rect rect = Imgproc.boundingRect(copy);
 
                 int h = rect.height;
+                int r = rect.x;
 
                 if(h > maxHeight /* && rect.y + rect.height > horizon /*&& rect.x + rect.width > verticalHorion*/){
                     maxHeight = h;
+                    maxX = r;
                     maxRect = rect;
                 }
 

@@ -188,7 +188,7 @@ public class colorReact extends LinearOpMode {
             //lower cb = more blue = skystone = white
             //higher cb = less blue = yellow stone = grey
             Imgproc.cvtColor(input, yCbCrChan2Mat, Imgproc.COLOR_RGB2YCrCb);;//converts rgb to ycrcb
-            Core.extractChannel(yCbCrChan2Mat, yCbCrChan2Mat, 1);//takes cr difference and stores (coi is channel of interest)
+            Core.extractChannel(yCbCrChan2Mat, yCbCrChan2Mat, 2);//takes cr difference and stores (coi is channel of interest)
                                                                      //0 = Y, 1 = Cr, 2 = Cb
 
             //b&w (thresholding to make a map of the desired color
