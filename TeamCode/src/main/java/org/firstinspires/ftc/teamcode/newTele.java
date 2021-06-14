@@ -55,7 +55,7 @@ public class newTele extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     public OpenCvCamera webcam;
     public highGoalDetection highGoalDetection;
-    private double Multiplier = 0.7;
+    private double Multiplier = 0.89;
     public double contPower;
     int FORWARD = 0;
     int BACKWARD = 1;
@@ -191,7 +191,7 @@ public class newTele extends LinearOpMode {
 
             resetStartTime();
 
-            Shooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(3, 2, 1, 1));
+            Shooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(4, 2, 1, 1));
 
             while (opModeIsActive()) {
 
@@ -217,7 +217,7 @@ public class newTele extends LinearOpMode {
                 if(Shooter.getPower() > 0){
                     Hopper.setPosition(0.6);
                 } else {
-                    Hopper.setPosition(0.4);
+                    Hopper.setPosition(0.5);
                 }
 
                 if (gamepad2.start){
@@ -379,7 +379,7 @@ public class newTele extends LinearOpMode {
                 if (gamepad2.left_bumper) { //OUT
                     WobbleClamper.setPosition(0.5);
                 } else if (gamepad2.right_bumper) { //IN
-                    WobbleClamper.setPosition(0.9);
+                    WobbleClamper.setPosition(1.0);
                 }
 
                 telemetry.addData("Conveyor + Intake", Conveyor.getPower());
@@ -406,11 +406,11 @@ public class newTele extends LinearOpMode {
 
                 } else if(highGoalDetection.getXPos() + (highGoalDetection.getWidth()/2) < 400 && highGoalDetection.getXPos() + (highGoalDetection.getWidth()/2) > 230){
 
-                    blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.BEATS_PER_MINUTE_OCEAN_PALETTE);
+                    blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
                 }
 
                 else{
-                    blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
+                    blinkblinkboy.setPattern(RevBlinkinLedDriver.BlinkinPattern.ORANGE);
                 }
 
 
@@ -744,7 +744,7 @@ public class newTele extends LinearOpMode {
             //0 = Y, 1 = Cr, 2 = Cb
 
             //b&w (thresholding to make a map of the desired color
-            Imgproc.threshold(yCbCrChan2Mat, thresholdMat, 180, 190, Imgproc.THRESH_BINARY);
+            Imgproc.threshold(yCbCrChan2Mat, thresholdMat, 185, 190, Imgproc.THRESH_BINARY);
 
             Mat eroder= Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size( 3, 3));
 

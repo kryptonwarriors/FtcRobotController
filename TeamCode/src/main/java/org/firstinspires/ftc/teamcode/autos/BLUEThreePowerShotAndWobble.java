@@ -63,10 +63,10 @@ import static org.firstinspires.ftc.teamcode.openCV.colorReact.threshold;
 public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
 
-    private ElapsedTime runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    private ElapsedTime runtime = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
     public DcMotor LeftForward, LeftBack, RightForward, RightBack, Wobbler, Ringer, Intake, Conveyor;
     public DcMotorEx Shooter;
-    public Servo WobbleClamper, RingClamper;
+    public Servo WobbleClamper, RingClamper, Hopper;
     public DistanceSensor RightDistance, FrontDistance, LeftDistance;
 
     public OpenCvCamera webcam;
@@ -106,8 +106,8 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
     int RTURN_WITHSHOOT = 17;
     int DISTANCELEFT = 16;
 
-    public static int xPos1 = 20;
-    public static int yPos1 = 347;
+    public static int xPos1 = 5;
+    public static int yPos1 = 307;
 
     public static int width1 = 95;
     public static int height1 = 77;
@@ -119,7 +119,10 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
     public static int orangeThreshold = 170;
     public static int horizon = 300;
-    public static int verticalHorion = 420;
+    public static int ringHorizon = 300;
+    public static int verticalHorion = 153;
+    public static int verticalHorion2 = 420;
+    public static boolean highGoal = true;
 
     private VoltageSensor voltageSensor;
     private double initialVoltage;
@@ -172,6 +175,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
         blinkblinkboy = hardwareMap.get(RevBlinkinLedDriver.class, "blinkblinkboy");
 
         WobbleClamper = hardwareMap.servo.get("WobbleClamper");
+        Hopper = hardwareMap.servo.get("Hopper");
 
         WobbleTouch = hardwareMap.get(TouchSensor.class, "WobbleTouch");
 
@@ -207,28 +211,28 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
 
-        /*int[] viewportContainerIds = OpenCvCameraFactory.getInstance()
+        int[] viewportContainerIds = OpenCvCameraFactory.getInstance()
                 .splitLayoutForMultipleViewports(
                         cameraMonitorViewId, //The container we're splitting
                         2, //The number of sub-containers to create
                         OpenCvCameraFactory.ViewportSplitMethod.VERTICALLY); //Whether to split the container vertically or horizontally
 
-*/
 
-       // backcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), viewportContainerIds[0]);
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 2"), cameraMonitorViewId);
 
-       // backcam.openCameraDevice();
+        backcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), viewportContainerIds[0]);
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 2"), viewportContainerIds[1]);
+
+        backcam.openCameraDevice();
         webcam.openCameraDevice();
 
         wobblePipeline = new WobbleDetection();
         pipeline = new RingDeterminationPipeline();
         ringStackPipeline = new ringStackDetection();
 
-        //backcam.setPipeline(ringStackPipeline);
-        webcam.setPipeline(wobblePipeline);
+        backcam.setPipeline(ringStackPipeline);
+        webcam.setPipeline(pipeline);
 
-       // backcam.startStreaming(frameHeight, frameWidth, OpenCvCameraRotation.UPSIDE_DOWN);
+        backcam.startStreaming(frameHeight, frameWidth, OpenCvCameraRotation.UPSIDE_DOWN);
         webcam.startStreaming(frameHeight, frameWidth, OpenCvCameraRotation.UPRIGHT);
 
         initialVoltage = voltageSensor.getVoltage();
@@ -238,42 +242,21 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
         while (!(isStopRequested() || isStarted())) {
 
 
-            /*//Update Neccessary Variables depending on Ring Configuration
+             //Update Neccessary Variables depending on Ring Configuration
             if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.C) {
 
                 encodersToDrop = 1845;
-                angleToDrop = 30;
-                armSpeed = -0.45;
-                diagonalDistance = 13;
-                secondWobbleGoalDistance = 45;
-                secondWobbleEncoderDistance = 600;
-                position = 3;
+            angleToDrop = 30;
+            armSpeed = -0.45;
+            diagonalDistance = 13;
+            secondWobbleGoalDistance = 45;
+            secondWobbleEncoderDistance = 600;
+            position = 3;
 
             } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.B) {
 
-                angleToDrop = 23;
-                encodersToDrop = 750;
-                armSpeed = -0.7;
-                diagonalDistance = 20;
-                secondWobbleGoalDistance = 37;
-                secondWobbleEncoderDistance = 400;
-                position = 2;
-                angleForSecond = -342;
-
-            } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.A){
-
-                encodersToDrop = 1100;
-                angleToDrop = 69;
-                armSpeed = -0.7;
-                diagonalDistance = 15;
-                secondWobbleGoalDistance = 52;
-                secondWobbleEncoderDistance = 100;
-                position = 1;
-
-            }*/
-
-            angleToDrop = 23;
-            encodersToDrop = 750;
+                angleToDrop = 20;
+            encodersToDrop = 745;
             armSpeed = -0.7;
             diagonalDistance = 20;
             secondWobbleGoalDistance = 37;
@@ -281,11 +264,35 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
             position = 2;
             angleForSecond = -342;
 
+
+            } else if (pipeline.configuration == RingDeterminationPipeline.RingConfiguration.A){
+
+               encodersToDrop = 870;
+            angleToDrop = 69;
+            armSpeed = -0.7;
+            diagonalDistance = 15;
+            secondWobbleGoalDistance = 52;
+            secondWobbleEncoderDistance = 100;
+            position = 1;
+
+            }
+
+
+            highGoal = true;
+            verticalHorion = 250;
+
             RightForward.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
             RightForward.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-            telemetry.addData("configuration", pipeline.configuration);
+
+            telemetry.addData("config", pipeline.configuration);
+            telemetry.addData("value", pipeline.getAnalysis());
+            telemetry.addData("x", ringStackPipeline.getXPos());
+
+            telemetry.addData("height", ringStackPipeline.getHeight());
+            telemetry.addData("ringWidth", ringStackPipeline.getWidth());
+            telemetry.addData("verticalHorion", verticalHorion);
 
             telemetry.addData("x", wobblePipeline.getXPos() + wobblePipeline.getWidth()/2);
             telemetry.addData("width", wobblePipeline.getWidth());
@@ -310,7 +317,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
             strafe.setInputRange(-90, 90);
             strafe.enable();
 
-            drive = new PIDController(0.016367, 0.00016367 * 5, 0.000016367 * 6);
+            drive = new PIDController(0.016367*0.7, 0.00016367 * 5, 0.000016367 * 6);
             drive.setSetpoint(0);
             drive.setOutputRange(0, 0.5);
             drive.setInputRange(-90, 90);
@@ -366,25 +373,47 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
 
             sleep(100000000);
-*/
 
+
+*/
            RightForward.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
             RightForward.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
             Shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-
 //GO TO POWERSHOTS
-            Shooter.setPower(.49);
+            Shooter.setPower(.52);
 
-            moveEncoders(Forward, 0.7, 1700, 0);
+            moveEncoders(Forward, 0.7, 1680, 2.5);
 
-            sleep(400);
+            sleep(1000);
 
-            imuTurn(RTURN, 0.23, 4);
+            //imuTurn(RTURN, 0.23, -2.5);
+
+            LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+            imuTurn(RTURN, 0.28, 0.5);
+
+            /*LeftBack.setPower(0.25);
+            LeftForward.setPower(0.25);
+            RightForward.setPower(-0.25);
+            RightBack.setPower(-0.25);
+
+            while(wobblePipeline.getXPos() + (wobblePipeline.getWidth()/2) > 305){
+                telemetry.addData("x", wobblePipeline.getXPos() + (wobblePipeline.getWidth()/2));
+                telemetry.addLine("going to first one");
+                telemetry.update();
+            }
+
+            LeftBack.setPower(0);
+            LeftForward.setPower(0);
+            RightForward.setPower(0);
+            RightBack.setPower(0);*/
 
             powershot();
+
+            highGoal = false;
 
             sleep(200);
 
@@ -395,159 +424,45 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
             sleep(50);
 
-            moveEncoders(FORWARD_WITH_ARM, 0.9, encodersToDrop, angleToDrop);
+            moveEncoders(FORWARD_WITH_ARM, 0.6, encodersToDrop, angleToDrop);
 
             openWobbleClamper();
 
             //C
             if (position == 3) {
 
-                //GO BACK FROM WOBBLE GOAL
+                moveEncoders(BACKWARD, 0.7, 1400, getAngle());
 
-                LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-                LeftForward.setPower(-0.8);
-                RightForward.setPower(-0.8);
-                LeftBack.setPower(-0.8);
-                RightBack.setPower(-0.8);
-
-                sleep(1400);
-
-                LeftForward.setPower(0);
-                RightForward.setPower(0);
-                LeftBack.setPower(0);
-                RightBack.setPower(0);
-
-//                moveEncoders(BACKWARD, 0.7, 170, -90);
-
-                sleep(10);
-
-                moveEncoders(BACKWARD, 0.7, 1000, 0);
+                moveEncoders(RIGHT, 0.7, 700, 0);
 
                 sleep(100000);
 
-                imuTurn(LTURN, 0.4, 170);
+                //GO BACK FROM WOBBLE GOAL
 
-                sleep(20);
-
-                moveEncoders(Forward, 0.7, 1655, 180);
-
-                sleep(100000000);
-
-                moveEncoders(LEFT, 0.7, 450, -90);
-
-                sleep(100);
-
-                moveEncoders(Forward, 0.7, 450, -90);
-
-                LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                LeftForward.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                RightForward.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                RightBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-                resetStartTime();
-
-                while (value >= 130 && !isStopRequested() && time < 1.5) {
-                    value = pipeline.getWobbleAnalysis();
-
-                    telemetry.addData("Values", value);
-                    telemetry.addData("time", time);
-                    telemetry.addLine("WAITING");
-                    telemetry.update();
-
-                }
-
-                sleep(100);
-
-                LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                LeftForward.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                RightForward.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                RightBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-                RightForward.setPower(-0.2);
-                RightBack.setPower(-0.2);
-                LeftForward.setPower(0.2);
-                LeftBack.setPower(0.2);
-
-                while (value < 125 && !isStopRequested() && getAngle() > -95) {
-
-                    value = pipeline.getWobbleAnalysisB();
-
-                    telemetry.addData("Values", value);
-                    telemetry.addLine("TRYING TO TURN");
-                    telemetry.update();
-
-                }
-
-                telemetry.addLine("Aman is fat");
-                telemetry.update();
-
-                RightForward.setPower(0);
-                RightBack.setPower(0);
-                LeftForward.setPower(0);
-                LeftBack.setPower(0);
-
-                sleep(400);
-
-                double angle = getAngle();
-
-                moveEncoders(Forward, 0.4, 85, angle);
-
-                sleep(200);
-
-                closeWobbleClamper();
-
-                sleep(300);
-
-                liftWobbleGoal(400);
-
-                sleep(100);
-
-                imuTurn(LTURN, 0.4, -20);
-
-                sleep(100);
-
-                moveDistance(RIGHT, 0.6, 15, 0, 2);
-
-                sleep(100);
-
-                moveEncoders(Forward, 0.7, 2800, 0);
-
-                openWobbleClamper();
-
-                moveEncoders(BACKWARD, 0.7, 700, 0);
-
-            } else if (position == 2) {
                 sleep(200);
 
                 //BACKWARD
 
-                moveEncoders(BACKWARD, 0.5, 50, angleToDrop);
+                moveEncoders(BACKWARD, 0.8, 700, 19);
 
-                imuTurn(RTURN, 0.5, 20);
-
-                Intake.setPower(-1);
-                Conveyor.setPower(-0.9);
-                Shooter.setPower(0.57);
-
-                moveEncoders(BACKWARD, 0.6, 820, -8.75);
-
-                sleep(1000);
-
-                Intake.setPower(0);
+                imuTurn(RTURN, 0.6, 11.2);
 
                 LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-                sleep(500);
+                RightForward.setPower(-0.53);
+                RightBack.setPower(-0.53);
+                LeftForward.setPower(-0.53);
+                LeftBack.setPower(-0.53);
 
-                RightForward.setPower(0.25);
-                RightBack.setPower(0.25);
-                LeftForward.setPower(-0.25);
-                LeftBack.setPower(-0.25);
+                Hopper.setPosition(0.5);
 
-                while(wobblePipeline.getXPos() + (wobblePipeline.getWidth()/2) < 310 && !isStopRequested()){
-                    telemetry.addLine("aiming daddy");
-                    telemetry.addData("xpos",wobblePipeline.getXPos() + (wobblePipeline.getWidth()/2));
+                runtime.reset();
+
+                while(ringStackPipeline.getWidth() < 236 && !isStopRequested() && runtime.seconds() < 1.2){
+                    telemetry.addData("time", runtime.seconds());
+                    telemetry.addData("width", ringStackPipeline.getWidth());
+                    telemetry.addData("height", ringStackPipeline.getHeight());
+                    telemetry.addData("x", ringStackPipeline.getXPos());
                     telemetry.update();
                 }
 
@@ -556,18 +471,48 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
                 LeftForward.setPower(0);
                 LeftBack.setPower(0);
 
-                sleep(50);
+                moveEncoders(BACKWARD, 50, 40, 0);
+
+                sleep(400);
+
+                Intake.setPower(-1);
+                Conveyor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                Conveyor.setPower(0.9);
+                Hopper.setPosition(0.5);
+                Shooter.setPower(0.64);
+
+                moveEncoders(BACKWARD, 0.6, 350, -1);
+
+                sleep(1000);
+
+                imuTurn(LTURN, 0.3, -1);
+
+                Hopper.setPosition(0.6);
 
                 shoot();
 
-                moveEncoders(BACKWARD, 0.7, 50, 0);
+                moveEncoders(BACKWARD, 0.6, 200, 0);
 
-                sleep(50);
+                sleep(100);
 
-                imuTurn(LTURN, 0.6, 130);
+                imuTurn(LTURN, 0.4, -1);
+
+                shoot();
+
+                Shooter.setPower(0);
+
+                Hopper.setPosition(0.5);
+
+                moveEncoders(RIGHT, 0.6, 60, 0);
+
+                Intake.setPower(0);
+                Conveyor.setPower(0);
+
+                moveEncoders(BACKWARD, 0.7, 40, -1);
+
+                imuTurn(LTURN, 0.6, 90);
 
                 while (value < 200 && !isStopRequested()) {
-
                     value = wobblePipeline.getHeight();
 
                     telemetry.addData("height", value);
@@ -579,12 +524,12 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
                 LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-                RightForward.setPower(0.23);
-                RightBack.setPower(0.23);
-                LeftForward.setPower(-0.23);
-                LeftBack.setPower(-0.23);
+                RightForward.setPower(-0.23);
+                RightBack.setPower(-0.23);
+                LeftForward.setPower(0.23);
+                LeftBack.setPower(0.23);
 
-                while (wobblePipeline.getXPos() + wobblePipeline.getWidth() / 2 < 195 && !isStopRequested()) {
+                while (wobblePipeline.getXPos() + wobblePipeline.getWidth() / 2 > 177 && !isStopRequested()) {
 
                     value = wobblePipeline.getXPos() + wobblePipeline.getWidth() / 2;
 
@@ -604,13 +549,183 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
                 sleep(50);
 
-                moveEncoders(Forward, 0.23, 50, getAngle());
+                RightForward.setPower(0.315);
+                RightBack.setPower(0.315);
+                LeftForward.setPower(0.315);
+                LeftBack.setPower(0.315);
+
+                while (wobblePipeline.getXPos() + wobblePipeline.getWidth() / 2 > 64 && !isStopRequested()) {
+
+                    value = wobblePipeline.getXPos() + wobblePipeline.getWidth() / 2;
+
+                    telemetry.addData("XPos", value);
+                    telemetry.addLine("TRYING TO TURN");
+                    telemetry.update();
+
+                }
+
+                RightForward.setPower(0);
+                RightBack.setPower(0);
+                LeftForward.setPower(0);
+                LeftBack.setPower(0);
 
                 sleep(100);
 
                 closeWobbleClamper();
 
+                sleep(100000000);
+
+                sleep(500);
+
+            }
+            else if (position == 2) {
+                sleep(200);
+
+                //BACKWARD
+
+                moveEncoders(BACKWARD, 0.5, 50, angleToDrop);
+
+                imuTurn(RTURN, 0.5, 15);
+
+                highGoal = true;
+
+                Intake.setPower(-1);
+                Conveyor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                Conveyor.setPower(0.9);
+                Hopper.setPosition(0.5);
+
+                moveEncoders(BACKWARD, 0.6, 1250, -2);
+
+                sleep(500);
+
+                Intake.setPower(0);
+                Conveyor.setPower(0);
+
+                highGoal = false;
+
+                sleep(50);
+
+                imuTurn(LTURN, 0.6, 142);
+
+                while (value < 200 && !isStopRequested()) {
+                    value = wobblePipeline.getHeight();
+
+                    telemetry.addData("height", value);
+                    telemetry.addLine("TRYING TO TURN");
+                    telemetry.update();
+                }
+
+                sleep(100);
+
+                LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+                RightForward.setPower(-0.23);
+                RightBack.setPower(-0.23);
+                LeftForward.setPower(0.23);
+                LeftBack.setPower(0.23);
+
+                while (wobblePipeline.getXPos() + wobblePipeline.getWidth() / 2 > 172 && !isStopRequested()) {
+
+                    value = wobblePipeline.getXPos() + wobblePipeline.getWidth() / 2;
+
+                    telemetry.addData("XPos", value);
+                    telemetry.addLine("TRYING TO TURN");
+                    telemetry.update();
+
+                }
+
+                RightForward.setPower(0);
+                RightBack.setPower(0);
+                LeftForward.setPower(0);
+                LeftBack.setPower(0);
+
+                telemetry.addLine("Aman is fat");
+                telemetry.update();
+
+                sleep(50);
+
+                RightForward.setPower(0.25);
+                RightBack.setPower(0.25);
+                LeftForward.setPower(0.25);
+                LeftBack.setPower(0.25);
+
+                while (wobblePipeline.getXPos() + wobblePipeline.getWidth() / 2 > 34 && !isStopRequested()) {
+
+                    value = wobblePipeline.getXPos() + wobblePipeline.getWidth() / 2;
+
+                    telemetry.addData("XPos", value);
+                    telemetry.addLine("TRYING TO TURN");
+                    telemetry.update();
+
+                }
+
+                RightForward.setPower(0);
+                RightBack.setPower(0);
+                LeftForward.setPower(0);
+                LeftBack.setPower(0);
+
+                sleep(800);
+
+                closeWobbleClamper();
+
+                sleep(700);
+
+                liftWobbleGoal(1550);
+
+                highGoal = true;
+
+                moveEncoders(BACKWARD, 0.7, 120, getAngle());
+
+                Shooter.setPower(0.65);
+
+                sleep(50);
+
+                imuTurn(RTURN, 0.5, 19);
+
+                moveEncoders(Forward, 0.6, 560, 9);
+
+                sleep(400);
+
+                Hopper.setPosition(0.6);
+
+                shoot();
+
+                moveEncoders(Forward, 0.7, 910, 4);
+
+                dropWobbleGoal();
+
+                moveEncoders(BACKWARD, 0.7, 50, getAngle());
+
+
                 sleep(1000000);
+
+                LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+                sleep(500);
+
+                RightForward.setPower(0.25);
+                RightBack.setPower(0.25);
+                LeftForward.setPower(-0.25);
+                LeftBack.setPower(-0.25);
+
+                while(wobblePipeline.getXPos() + (wobblePipeline.getWidth()/2) < 370 && !isStopRequested()){
+                    telemetry.addLine("aiming daddy");
+                    telemetry.addData("xpos",wobblePipeline.getXPos() + (wobblePipeline.getWidth()/2));
+                    telemetry.update();
+                }
+
+                RightForward.setPower(0);
+                RightBack.setPower(0);
+                LeftForward.setPower(0);
+                LeftBack.setPower(0);
+
+                sleep(50);
+
+                shoot();
+
+                moveEncoders(Forward, 0.7, 1000, 0);
+
+                sleep(10000000);
 
                 moveDistance(RIGHT, 0.7, 24, -90, 4);
 
@@ -686,7 +801,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
                 imuTurn(RTURN, 0.4, -150);
 
                 Intake.setPower(-1);
-                Conveyor.setPower(-0.9);
+                Conveyor.setPower(0.9);
 
                 moveEncoders(BACKWARD, 0.7, 900, -178);
 
@@ -762,13 +877,14 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
                 //liftWobbleGoal(16367/2 - 900 - 5000);
 
 
-            } else if (position == 1) {
+            }
+            else if (position == 1) {
 
                 moveEncoders(BACKWARD, 0.4, 400, 90);
 
                 sleep(50);
 
-                imuTurn(LTURN, 0.4, 165);
+                imuTurn(LTURN, 0.4, 171);
 
                 /*
                 if (initialVoltage > 13) {
@@ -779,9 +895,12 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 */
                 sleep(150);
 
-                moveEncoders(Forward, 0.7, 950, 180);
+                moveEncoders(Forward, 0.7, 880, 175);
 
                 sleep(50);
+
+                LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
 
                 while (value < 200 && !isStopRequested()) {
 
@@ -792,6 +911,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
                     telemetry.update();
                 }
 
+
                 sleep(100);
 
                 LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -801,7 +921,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
                 LeftForward.setPower(0.23);
                 LeftBack.setPower(0.23);
 
-                while (value > 192 && !isStopRequested()) {
+                while (value > 196 && !isStopRequested()) {
 
                     value = wobblePipeline.getXPos() + wobblePipeline.getWidth() / 2;
 
@@ -821,29 +941,36 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
                 sleep(50);
 
-                RightForward.setPower(0.38);
-                RightBack.setPower(0.38);
-                LeftForward.setPower(0.38);
-                LeftBack.setPower(0.38);
+                LeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-                sleep(100);
+                RightForward.setPower(0.23);
+                RightBack.setPower(0.23);
+                LeftForward.setPower(0.23);
+                LeftBack.setPower(0.23);
 
-                while (!isStopRequested() && wobblePipeline.getHeight() > 80){
+                while (value > 24 && !isStopRequested()) {
 
+                    value = wobblePipeline.getXPos() + wobblePipeline.getWidth() / 2;
 
-                    telemetry.addData("area", wobblePipeline.getArea());
-                telemetry.addData("height", wobblePipeline.getHeight());
-                telemetry.update();
-            }
+                    telemetry.addData("XPos", value);
+                    telemetry.addLine("TRYING TO TURN");
+                    telemetry.update();
 
+                }
                 RightForward.setPower(0);
                 RightBack.setPower(0);
                 LeftForward.setPower(0);
                 LeftBack.setPower(0);
 
+                sleep(500);
+
                 closeWobbleClamper();
 
-                liftWobbleGoal(900);
+                webcam.stopStreaming();
+
+                sleep(200);
+
+                liftWobbleGoal(300);
 
                 moveEncoders(BACKWARD, 0.7, 300, getAngle());
 
@@ -851,7 +978,11 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
                 imuTurn(RTURN, 0.4, 110);
 
-                moveEncoders(RIGHT, 0.7, 1300, 90);
+                moveEncoders(RIGHT, 1, 1100, 90);
+
+                sleep(50);
+
+                moveEncoders(Forward, 0.4, 90, 90);
 
                 dropWobbleGoal();
 
@@ -860,7 +991,9 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
                 moveEncoders(BACKWARD, 0.7, 700, 90);
         }
 
-            sleep(100000000); }
+            sleep(100000000);
+
+        }
 
             //liftWobbleGoal(16367/2 - 900 - 800);
 
@@ -1191,11 +1324,11 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
 
     public void closeWobbleClamper() {
-        WobbleClamper.setPosition(0.9);
+        WobbleClamper.setPosition(1);
     }
 
     public void openWobbleClamper () {
-        WobbleClamper.setPosition(0.25);
+        WobbleClamper.setPosition(0.353);
     }
 
 
@@ -1357,11 +1490,11 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
 
             if(i==0)
-                Shooter.setPower(0.49);
+                Shooter.setPower(0.55);
             else if(i==1)
-                Shooter.setPower(0.532);
+                Shooter.setPower(0.503);
             else if(i==2)
-                Shooter.setPower(0.515);
+                Shooter.setPower(0.481);
 
 
             /*if (i == 0)
@@ -1383,7 +1516,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
             else if (i == 1)
                 Conveyor.setTargetPosition(650);
             else if (i == 2)
-                Conveyor.setTargetPosition(1500);
+                Conveyor.setTargetPosition(1700);
 
 
             Conveyor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -1403,11 +1536,53 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
             if(i == 0){
 
-                imuTurn(RTURN, 0.2, -3.3);
+                imuTurn(RTURN, 0.25, -6.1);
+
+               /* sleep(1000);
+
+                verticalHorion = 180;
+
+                LeftBack.setPower(0.25);
+                LeftForward.setPower(0.25);
+                RightForward.setPower(-0.25);
+                RightBack.setPower(-0.25);
+
+                while(wobblePipeline.getXPos() + (wobblePipeline.getWidth()/2) > 252){
+                    telemetry.addData("x", wobblePipeline.getXPos() + (wobblePipeline.getWidth()/2));
+                    telemetry.addLine("going to second one");
+                    telemetry.update();
+                }
+
+                LeftBack.setPower(0);
+                LeftForward.setPower(0);
+                RightForward.setPower(0);
+                RightBack.setPower(0);
+*/
 
             } else if(i == 1){
 
-                imuTurn(RTURN, 0.2, -9);
+                imuTurn(RTURN, 0.25, -12.36);
+
+                /*verticalHorion = 140;
+
+                sleep(1000);
+
+                LeftBack.setPower(0.25);
+                LeftForward.setPower(0.25);
+                RightForward.setPower(-0.25);
+                RightBack.setPower(-0.25);
+
+                while(wobblePipeline.getXPos() + (wobblePipeline.getWidth()/2) > 192){
+                    telemetry.addData("x", wobblePipeline.getXPos() + (wobblePipeline.getWidth()/2));
+                    telemetry.addLine("going to third one");
+                    telemetry.update();
+                }
+
+                LeftBack.setPower(0);
+                LeftForward.setPower(0);
+                RightForward.setPower(0);
+                RightBack.setPower(0);
+*/
             }
             sleep(60);
 
@@ -1475,7 +1650,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
         Conveyor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        Conveyor.setTargetPosition(1400);
+        Conveyor.setTargetPosition(1800);
 
         Conveyor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
@@ -1516,14 +1691,15 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
     public void liftWobbleGoal(int encoders) {
         Wobbler.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-
         Wobbler.setTargetPosition(encoders);
 
         Wobbler.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         Wobbler.setPower(0.7);
 
-        while (opModeIsActive() && Math.abs(Wobbler.getCurrentPosition()) < Math.abs(Wobbler.getTargetPosition())) {
+        runtime.reset();
+
+        while (opModeIsActive() && Math.abs(Wobbler.getCurrentPosition()) < Math.abs(Wobbler.getTargetPosition()) && runtime.seconds() < 1.3) {
             telemetry.addData("Dropping", "Right Now");
             telemetry.update();
         }
@@ -1558,8 +1734,8 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
         static final int REGION1_WIDTH = width1;
         static final int REGION1_HEIGHT = height1;
-        final int FOUR_RING_THRESHOLD = 145;
-        final int ONE_RING_THRESHOLD = 133;
+        final int FOUR_RING_THRESHOLD = 132;
+        final int ONE_RING_THRESHOLD = 128;
 
         Point region1_pointA = new Point(
                 REGION1_TOPLEFT_ANCHOR_POINT.x,
@@ -1705,7 +1881,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
             //0 = Y, 1 = Cr, 2 = Cb
 
             //b&w (thresholding to make a map of the desired color
-            Imgproc.threshold(yCbCrChan2Mat, thresholdMat, orangeThreshold, 180, Imgproc.THRESH_BINARY);
+            Imgproc.threshold(yCbCrChan2Mat, thresholdMat, 155, 180, Imgproc.THRESH_BINARY);
 
             Mat eroder= Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size( 3, 3));
 
@@ -1727,25 +1903,52 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
 
             Rect maxRect = new Rect();
 
-            for(MatOfPoint c : contoursList){
-                MatOfPoint2f copy = new MatOfPoint2f(c.toArray());
-                Rect rect = Imgproc.boundingRect(copy);
+            if(highGoal == false){
 
-                int h = rect.height;
-                int r = rect.x;
+                for(MatOfPoint c : contoursList){
+                    MatOfPoint2f copy = new MatOfPoint2f(c.toArray());
+                    Rect rect = Imgproc.boundingRect(copy);
 
-                if(h > maxHeight /* && rect.y + rect.height > horizon /*&& rect.x + rect.width > verticalHorion*/){
-                    maxHeight = h;
-                    maxX = r;
-                    maxRect = rect;
+                    int h = rect.height;
+                    int r = rect.x;
+
+                    if(h > maxHeight /* && rect.y + rect.height > horizon && rect.x + rect.width < verticalHorion*/){
+                        maxHeight = h;
+                        maxX = r;
+                        maxRect = rect;
+                    }
+
+                    c.release();
+                    copy.release();
                 }
+            } else {
 
-                c.release();
-                copy.release();
+                for(MatOfPoint c : contoursList){
+                    MatOfPoint2f copy = new MatOfPoint2f(c.toArray());
+                    Rect rect = Imgproc.boundingRect(copy);
+
+                    int h = rect.height;
+                    int r = rect.x;
+
+                    if(h > maxHeight  && rect.y + rect.height > 200 && rect.y + rect.height < 290 && rect.x + rect.width > verticalHorion && rect.x + rect.width < verticalHorion2){
+                        maxHeight = h;
+                        maxX = r;
+                        maxRect = rect;
+                    }
+
+                    c.release();
+                    copy.release();
+                }
             }
 
+
+
             //Imgproc.line(all, new Point(0, horizon), new Point(frameHeight, horizon), new Scalar (255,0,255));
-            //Imgproc.line(all, new Point(verticalHorion, 0), new Point(verticalHorion, frameWidth), new Scalar (255,0,255));
+
+            Imgproc.line(all, new Point(0, 200), new Point(frameHeight, 200), new Scalar (255,0,255));
+            Imgproc.line(all, new Point(0, 290), new Point(frameHeight, 290), new Scalar (255,0,255));
+            Imgproc.line(all, new Point(verticalHorion, 0), new Point(verticalHorion, frameWidth), new Scalar (255,0,255));
+            Imgproc.line(all, new Point(verticalHorion2, 0), new Point(verticalHorion2, frameWidth), new Scalar (255,0,255));
             Imgproc.rectangle(thresholdMat, maxRect, new Scalar(0, 0.0, 255), 10);
             Imgproc.rectangle(input, maxRect, new Scalar(0, 0.0, 255), 10);
             Imgproc.rectangle(all, maxRect, new Scalar(0, 0.0, 255), 10);
@@ -1795,8 +1998,6 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
         private Stage[] stages = Stage.values();
 
 
-
-
         @Override
         public void onViewportTapped() {
             /*
@@ -1828,7 +2029,7 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
             //0 = Y, 1 = Cr, 2 = Cb
 
             //b&w (thresholding to make a map of the desired color
-            Imgproc.threshold(yCbCrChan2Mat, thresholdMat, 175, 190, Imgproc.THRESH_BINARY);
+            Imgproc.threshold(yCbCrChan2Mat, thresholdMat, 160, 180, Imgproc.THRESH_BINARY);
 
             Mat eroder= Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size( 3, 3));
 
@@ -1889,6 +2090,4 @@ public class BLUEThreePowerShotAndWobble extends LinearOpMode {
         public double getArea() {return area;}
 
     }
-
-
 }

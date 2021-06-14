@@ -69,6 +69,8 @@ public class colorReact extends LinearOpMode {
     private static int valRight = -1;
     private static String SkyStonePos;
 
+    public static final double verticalHorion = 140;
+
     private static float rectHeight = .6f / 8f;
     private static float rectWidth = 1.5f / 8f;
 
@@ -188,7 +190,7 @@ public class colorReact extends LinearOpMode {
             //lower cb = more blue = skystone = white
             //higher cb = less blue = yellow stone = grey
             Imgproc.cvtColor(input, yCbCrChan2Mat, Imgproc.COLOR_RGB2YCrCb);;//converts rgb to ycrcb
-            Core.extractChannel(yCbCrChan2Mat, yCbCrChan2Mat, 2);//takes cr difference and stores (coi is channel of interest)
+            Core.extractChannel(yCbCrChan2Mat, yCbCrChan2Mat, 1);//takes cr difference and stores (coi is channel of interest)
                                                                      //0 = Y, 1 = Cr, 2 = Cb
 
             //b&w (thresholding to make a map of the desired color
@@ -221,7 +223,7 @@ public class colorReact extends LinearOpMode {
                 int h = rect.height;
                 int x = rect.x;
 
-                if(h > maxHeight){
+                if(h > maxHeight && rect.x + rect.width < verticalHorion){
                     maxHeight = h;
                     maxRect = rect;
                     tempX = x;
